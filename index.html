@@ -1,191 +1,348 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EduLink LMS</title>
   <style>
-    /* Basic Reset */
+    /* --- CSS reset & base --- */
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f4f6f8; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #0070f3; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    header .logo { font-size: 1.5rem; font-weight: bold; }
+    nav a { color: white; margin-left: 1rem; text-decoration: none; }
+    nav a.active { text-decoration: underline; }
+    main { flex: 1; padding: 2rem; }
+    .hidden { display: none; }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      line-height: 1.6;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
+    .form-container { max-width: 400px; margin: auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .form-container h2 { margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.3rem; font-weight: 500; }
+    .form-group input, .form-group select { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+    .btn { padding: 0.6rem 1.2rem; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .btn:hover { background: #005bb5; }
 
-    header {
-      background: #0070f3;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .card h3 { margin-bottom: 0.5rem; }
+    .card p { color: #555; }
+    .card .btn-small { padding: 0.4rem 0.8rem; font-size: 0.9rem; }
 
-    .logo {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    nav a {
-      color: white;
-      margin-left: 1.5rem;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    nav a.active {
-      text-decoration: underline;
-    }
-
-    main {
-      flex: 1;
-      padding: 2rem;
-    }
-
-    .section {
-      margin-bottom: 2rem;
-    }
-
-    .card-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .card {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .card h3 {
-      margin-bottom: 0.5rem;
-    }
-
-    .btn {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background: #0070f3;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    footer {
-      text-align: center;
-      padding: 1rem;
-      background: #eee;
-      font-size: 0.9rem;
-    }
+    footer { text-align: center; padding: 1rem; background: #eee; font-size: 0.9rem; }
 
     @media (max-width: 600px) {
-      nav a {
-        margin-left: 0.5rem;
-      }
+      nav { flex-wrap: wrap; }
+      nav a { margin: 0.5rem 0; }
     }
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo">EduLink</div>
     <nav>
       <a href="#" class="nav-link active" data-page="home">Home</a>
       <a href="#" class="nav-link" data-page="courses">Courses</a>
+      <a href="#" class="nav-link" data-page="mycourses">My Courses</a>
       <a href="#" class="nav-link" data-page="profile">Profile</a>
+      <a href="#" class="nav-link" data-page="parent">Parent Control</a>
+      <a href="#" id="btnLogout" class="nav-link hidden">Logout</a>
     </nav>
   </header>
 
   <main id="content">
-    <!-- Dynamic content will be loaded here -->
+    <!-- dynamic content -->
   </main>
 
   <footer>
-    &copy; 2025 EduLink LMS. All rights reserved.
+    &copy; 2025 EduLink LMS
   </footer>
 
   <script>
-    const API_BASE_URL = 'https://edulink-lms-server.onrender.com';
+    const API_BASE = 'https://edulink-lms-server.onrender.com';
+
+    // Store auth token in memory or localStorage
+    let authToken = null;
+    let currentUser = null;  // { name, role, ... }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initNavigation();
+      setupNav();
       loadPage('home');
     });
 
-    function initNavigation() {
+    function setupNav() {
       document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', e => {
+        link.addEventListener('click', (e) => {
           e.preventDefault();
-          const page = link.dataset.page;
+          const pg = link.dataset.page;
+          if (!pg) return;
           document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
           link.classList.add('active');
-          loadPage(page);
+          loadPage(pg);
         });
+      });
+      document.getElementById('btnLogout').addEventListener('click', e => {
+        e.preventDefault();
+        logout();
       });
     }
 
+    function showLogoutLink(show) {
+      const btn = document.getElementById('btnLogout');
+      if (show) btn.classList.remove('hidden');
+      else btn.classList.add('hidden');
+    }
+
     async function loadPage(page) {
-      const content = document.getElementById('content');
-      content.innerHTML = '<p>Loading...</p>';
+      const cont = document.getElementById('content');
+      cont.innerHTML = '<p>Loading...</p>';
 
       if (page === 'home') {
-        content.innerHTML = `
-          <div class="section">
+        cont.innerHTML = `
+          <div class="form-container">
             <h2>Welcome to EduLink</h2>
-            <p>Start learning new skills today.</p>
+            <p>Please <a href="#" id="toRegister">Register</a> or <a href="#" id="toLogin">Login</a> to continue.</p>
           </div>
         `;
+        document.getElementById('toRegister').addEventListener('click', e => {
+          e.preventDefault();
+          showRegister();
+        });
+        document.getElementById('toLogin').addEventListener('click', e => {
+          e.preventDefault();
+          showLogin();
+        });
       }
-
-      if (page === 'courses') {
-        try {
-          const res = await fetch(\`\${API_BASE_URL}/courses\`);
-          const data = await res.json();
-          content.innerHTML = '<h2>Courses</h2><div class="card-list" id="courses"></div>';
-          const courseList = document.getElementById('courses');
-
-          data.forEach(course => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = \`
-              <h3>\${course.title}</h3>
-              <p>\${course.description || 'No description available.'}</p>
-              <a class="btn" href="#">View Course</a>
-            \`;
-            courseList.appendChild(div);
-          });
-        } catch (err) {
-          content.innerHTML = '<p>Failed to load courses. Please try again later.</p>';
-          console.error(err);
-        }
+      else if (page === 'courses') {
+        await showAllCourses(cont);
       }
-
-      if (page === 'profile') {
-        try {
-          const res = await fetch(\`\${API_BASE_URL}/users/me\`);
-          const user = await res.json();
-          content.innerHTML = \`
-            <h2>My Profile</h2>
-            <p><strong>Name:</strong> \${user.name}</p>
-            <p><strong>Email:</strong> \${user.email}</p>
-          \`;
-        } catch (err) {
-          content.innerHTML = '<p>Error loading profile. Please log in or try again.</p>';
-          console.error(err);
-        }
+      else if (page === 'mycourses') {
+        await showMyCourses(cont);
+      }
+      else if (page === 'profile') {
+        await showProfile(cont);
+      }
+      else if (page === 'parent') {
+        showParentControl(cont);
       }
     }
-  </script>
 
+    function showRegister() {
+      const cont = document.getElementById('content');
+      cont.innerHTML = `
+        <div class="form-container">
+          <h2>Register</h2>
+          <div class="form-group"><label>Name</label><input type="text" id="reg-name" /></div>
+          <div class="form-group"><label>Email</label><input type="email" id="reg-email" /></div>
+          <div class="form-group"><label>Password</label><input type="password" id="reg-password" /></div>
+          <div class="form-group"><label>Role</label>
+            <select id="reg-role">
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+          <button class="btn" id="btnRegister">Register</button>
+          <p>Already have an account? <a href="#" id="linkLogin">Login</a></p>
+        </div>
+      `;
+      document.getElementById('btnRegister').addEventListener('click', doRegister);
+      document.getElementById('linkLogin').addEventListener('click', e => {
+        e.preventDefault();
+        showLogin();
+      });
+    }
+
+    function showLogin() {
+      const cont = document.getElementById('content');
+      cont.innerHTML = `
+        <div class="form-container">
+          <h2>Login</h2>
+          <div class="form-group"><label>Email</label><input type="email" id="login-email" /></div>
+          <div class="form-group"><label>Password</label><input type="password" id="login-password" /></div>
+          <button class="btn" id="btnLogin">Login</button>
+          <p>No account? <a href="#" id="linkRegister">Register</a></p>
+        </div>
+      `;
+      document.getElementById('btnLogin').addEventListener('click', doLogin);
+      document.getElementById('linkRegister').addEventListener('click', e => {
+        e.preventDefault();
+        showRegister();
+      });
+    }
+
+    async function doRegister() {
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      const role = document.getElementById('reg-role').value;
+
+      try {
+        const resp = await fetch(\`\${API_BASE}/auth/register\`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message || 'Registration failed');
+        alert('Registered successfully! Please login.');
+        showLogin();
+      } catch (err) {
+        alert('Registration error: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const resp = await fetch(\`\${API_BASE}/auth/login\`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message || 'Login failed');
+        authToken = data.token;
+        currentUser = data.user;
+        alert('Logged in as ' + currentUser.name);
+        showLogoutLink(true);
+        loadPage('courses');
+      } catch (err) {
+        alert('Login error: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    function logout() {
+      authToken = null;
+      currentUser = null;
+      showLogoutLink(false);
+      // reset nav active
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.querySelector('[data-page="home"]').classList.add('active');
+      loadPage('home');
+    }
+
+    async function showAllCourses(cont) {
+      try {
+        const resp = await fetch(\`\${API_BASE}/courses\`, {
+          headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        const data = await resp.json();
+        cont.innerHTML = '<h2>Available Courses (Classes 6–10)</h2><div class="card-list" id="coursesList"></div>';
+        const list = document.getElementById('coursesList');
+        data.forEach(course => {
+          const c = document.createElement('div');
+          c.className = 'card';
+          c.innerHTML = \`
+            <h3>\${course.title}</h3>
+            <p>\${course.description || ''}</p>
+            <button class="btn-small" onclick="enrollCourse('\${course._id}')">Enroll</button>
+          \`;
+          list.appendChild(c);
+        });
+      } catch (err) {
+        cont.innerHTML = '<p>Failed to load courses.</p>';
+        console.error(err);
+      }
+    }
+
+    async function enrollCourse(courseId) {
+      try {
+        const resp = await fetch(\`\${API_BASE}/courses/enroll\`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + authToken
+          },
+          body: JSON.stringify({ courseId })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message || 'Enroll failed');
+        alert('Enrolled successfully!');
+        loadPage('mycourses');
+      } catch (err) {
+        alert('Enroll error: ' + err.message);
+        console.error(err);
+      }
+    }
+
+    async function showMyCourses(cont) {
+      try {
+        const resp = await fetch(\`\${API_BASE}/users/me/courses\`, {
+          headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        const data = await resp.json();
+        cont.innerHTML = '<h2>My Courses</h2><div class="card-list" id="myList"></div>';
+        const list = document.getElementById('myList');
+        data.forEach(course => {
+          const c = document.createElement('div');
+          c.className = 'card';
+          c.innerHTML = \`
+            <h3>\${course.title}</h3>
+            <p>\${course.description || ''}</p>
+          \`;
+          list.appendChild(c);
+        });
+      } catch (err) {
+        cont.innerHTML = '<p>Failed to load your courses.</p>';
+        console.error(err);
+      }
+    }
+
+    async function showProfile(cont) {
+      if (!currentUser) {
+        cont.innerHTML = '<p>Please login to view profile.</p>';
+        return;
+      }
+      cont.innerHTML = \`
+        <div class="form-container">
+          <h2>Profile</h2>
+          <div class="form-group"><label>Name</label><input type="text" id="profile-name" value="\${currentUser.name}" /></div>
+          <div class="form-group"><label>Email</label><input type="email" id="profile-email" value="\${currentUser.email}" disabled /></div>
+          <button class="btn" id="btnSaveProfile">Save</button>
+        </div>
+      \`;
+      document.getElementById('btnSaveProfile').addEventListener('click', async () => {
+        const name = document.getElementById('profile-name').value;
+        try {
+          const resp = await fetch(\`\${API_BASE}/users/me\`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + authToken
+            },
+            body: JSON.stringify({ name })
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.message || 'Update failed');
+          currentUser.name = name;
+          alert('Profile updated');
+        } catch (err) {
+          alert('Profile update error: ' + err.message);
+          console.error(err);
+        }
+      });
+    }
+
+    function showParentControl(cont) {
+      cont.innerHTML = `
+        <div class="form-container">
+          <h2>Parent Control</h2>
+          <p>Monitor child's activities (stub feature).</p>
+          <div class="form-group"><label>Child's Email</label><input type="email" id="pc-child-email" /></div>
+          <button class="btn" id="btnMonitor">Start Monitoring</button>
+        </div>
+      `;
+      document.getElementById('btnMonitor').addEventListener('click', () => {
+        const email = document.getElementById('pc-child-email').value;
+        alert('Would monitor child: ' + email + ' (not implemented yet)');
+      });
+    }
+
+  </script>
 </body>
 </html>

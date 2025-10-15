@@ -303,7 +303,7 @@ function showLoading(show = true){
    Simple local API wrapper (tries backend, falls back to mock)
    =========================== */
 async function apiFetch(path, opts = {}){
-  const url = (API_BASE_URL || '').replace(/\/$/, '') + path;
+  const url = (API_BASE_URL || 'https://edulink-lms.onrender.com').replace(/\/$/, '') + path;
   // attach token if present
   const token = localStorage.getItem('edulink_token');
   opts.headers = opts.headers || {};
@@ -311,7 +311,7 @@ async function apiFetch(path, opts = {}){
 
   try {
     // when API_BASE_URL is not configured, throw to go to mock
-    if(!API_BASE_URL || API_BASE_URL === 'YOUR_BACKEND_API_URL_HERE') throw new Error('No API configured');
+    if(!API_BASE_URL || API_BASE_URL === 'https://edulink-lms.onrender.com') throw new Error('No API configured');
     showLoading(true);
     const res = await fetch(url, opts);
     showLoading(false);
@@ -715,8 +715,5 @@ function toggleAuthMode(mode) {
   }
 }
 </script>
-
-
-
 </body>
 </html>

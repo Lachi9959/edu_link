@@ -366,39 +366,58 @@ function mockFallback(path, opts){
 /* ===========================
    Auth (login/register/logout)
    =========================== */
-async function openAuthModal(mode = 'login'){
+function openAuthModal(mode = 'login') {
   document.getElementById('auth-modal').style.display = 'flex';
-  document.getElementById('auth-modal-title').innerText = mode === 'login' ? 'Login' : 'Sign Up';
-  document.getElementById('auth-name').style.display = mode === 'login' ? 'none' : 'block';
-  document.getElementById('auth-role').style.display = mode === 'login' ? 'none' : 'block';
-  const btn = document.getElementById('auth-submit');
-  btn.onclick = async ()=>{
-    const email = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value.trim();
-    const name = document.getElementById('auth-name').value.trim();
-    const role = document.getElementById('auth-role').value;
-    if(!email || !password){ showToast('Please enter email and password', 'error'); return; }
-    if(mode === 'login'){
-      const res = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-      if(res.success){
-        localStorage.setItem('edulink_token', res.data.token);
-        state.currentUser = res.data.user;
-        renderHeaderUser();
-        showToast('Logged in as ' + res.data.user.name);
-        closeAuthModal();
-        navigateTo(res.data.user.role === 'parent' ? 'parent-dashboard-page' : 'student-dashboard-page');
-      } else showToast(res.error || 'Login failed', 'error');
-    } else {
-      const res = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, role }) });
-      if(res.success){
-        localStorage.setItem('edulink_token', res.data.token);
-        state.currentUser = res.data.user;
-        renderHeaderUser();
-        showToast('Registered & logged in as ' + res.data.user.name);
-        closeAuthModal();
-      } else showToast(res.error || 'Registration failed', 'error');
-    }
-  };
+  toggleAuthMode(mode);
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  if (!email || !password) {
+    showToast('Please enter email and password', 'error');
+    return;
+  }
+  const res = await apiFetch('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  if (res.success) {
+    localStorage.setItem('edulink_token', res.data.token);
+    state.currentUser = res.data.user;
+    renderHeaderUser();
+    showToast('Logged in as ' + res.data.user.name);
+    closeAuthModal();
+    navigateTo(
+      res.data.user.role === 'parent'
+        ? 'parent-dashboard-page'
+        : 'student-dashboard-page'
+    );
+  } else {
+    showToast(res.error || 'Login failed', 'error');
+  }
+}
+
+async function handleRegister(event) {
+  event.preventDefault();
+  const name = document.getElementById('register-name').value.trim();
+  const email = document.getElementById('register-email').value.trim();
+  const password = document.getElementById('register-password').value.trim();
+  const role = document.getElementById('register-role').value;
+  const res = await apiFetch('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password, role }),
+  });
+  if (res.success) {
+    localStorage.setItem('edulink_token', res.data.token);
+    state.currentUser = res.data.user;
+    renderHeaderUser();
+    showToast('Registered & logged in as ' + res.data.user.name);
+    closeAuthModal();
+  } else {
+    showToast(res.error || 'Registration failed', 'error');
+  }
 }
 
 function closeAuthModal(){
@@ -446,7 +465,7 @@ function renderHeaderUser(){
     const signupBtn = document.createElement('button');
     signupBtn.className = 'px-4 py-2 rounded bg-edulink text-white';
     signupBtn.innerText = 'Sign Up';
-    signupBtn.onclick = () => openAuthModal('signup');
+    signupBtn.onclick = () => openAuthModal('register');
     area.appendChild(loginBtn);
     area.appendChild(signupBtn);
   } else {
@@ -689,11 +708,12 @@ function searchFromHero(){
   await tryRestoreSession();
   renderHeaderUser();
   renderHome();
+
+  // Open login modal if not logged in
+  if (!state.currentUser) {
+    openAuthModal('login');
+  }
 })();
-// Default: show login modal when site loads
-window.addEventListener('DOMContentLoaded', () => {
-  openAuthModal('login'); // Open login by default
-});
 
 // Function to toggle between login and registration inside modal
 function toggleAuthMode(mode) {

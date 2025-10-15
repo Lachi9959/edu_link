@@ -1,458 +1,722 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduLink - Your Future Starts Here</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <style>
-        /* --- Enhanced UI/UX Styles --- */
-        :root {
-            --primary-blue: #2563eb;
-            --primary-indigo: #4f46e5;
-            --accent-cyan: #0891b2;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EduLink — Learning Management System (Demo)</title>
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind custom config
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            edulink: '##FF00F',
+            accent: '#ff6b6b'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif']
+          }
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Softer background */
-        }
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* --- 3D Login Page Styles --- */
-        #login-page-container {
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6, #818cf8);
-            background-size: 400% 400%;
-            animation: gradientMove 15s ease infinite;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 1200px;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-        }
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .shape { position: absolute; border-radius: 50%; opacity: 0.15; filter: blur(2px); animation: float 12s ease-in-out infinite alternate; }
-        .shape1 { width: 150px; height: 150px; background: #a5b4fc; top: 10%; left: 5%; animation-delay: 0s; }
-        .shape2 { width: 200px; height: 200px; background: #6366f1; bottom: 10%; right: 5%; animation-delay: 3s; }
-        @keyframes float { 0% { transform: translateY(0) rotate(0deg) scale(1); } 100% { transform: translateY(-40px) rotate(30deg) scale(1.1); } }
-        
-        .login-box {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            width: 400px;
-            padding: 3rem;
-            text-align: center;
-            transform-style: preserve-3d;
-            transform: rotateY(0deg);
-            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .login-box:hover { transform: rotateY(5deg) scale(1.02); }
-        .login-box .role-icon { width: 100px; height: 100px; margin: -80px auto 10px; border-radius: 50%; background: white; padding: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .login-box h2 { font-weight: 800; font-size: 1.75rem; color: #1e293b; }
-        .input-group { position: relative; margin-bottom: 1.5rem; }
-        .input-group i { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); color: var(--primary-blue); }
-        .input-group input, .input-group select { width: 100%; padding: 14px 14px 14px 50px; border: 1px solid #d1d5db; border-radius: 12px; background: #f9fafb; color: #111827; font-size: 1rem; outline: none; transition: all 0.3s ease; }
-        .input-group input:focus, .input-group select:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); background: white; }
-        #login-page-container button[type="submit"] { width: 100%; padding: 16px; background: linear-gradient(90deg, var(--primary-indigo), var(--primary-blue)); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); transition: all 0.3s ease; }
-        #login-page-container button[type="submit"]:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.5); }
-        .auth-toggle-link { cursor: pointer; color: var(--primary-indigo); font-weight: 600; margin-top: 1rem; display: inline-block; }
-        #auth-message { margin-top: 1rem; font-weight: 500; min-height: 24px; }
-
-        /* --- General App Enhancements --- */
-        .toast { transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .toast-in { animation: slideInUp 0.5s forwards; }
-        .modal-backdrop { background-color: rgba(0,0,0,0.6); }
-        .btn-primary { background: var(--primary-blue); color: white; font-weight: 600; padding: 12px 24px; border-radius: 999px; transition: all 0.3s ease; }
-        .btn-primary:hover { background: var(--primary-indigo); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .course-card { transition: all 0.3s ease; }
-        .course-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+    /* simple glue for our SPA pages */
+    .page { display: none; }
+    .page.active { display: block; }
+    /* toast animation */
+    .toast-enter { transform: translateY(20px); opacity: 0; }
+    .toast-show { transform: translateY(0); opacity: 1; }
+  </style>
 </head>
-<body>
-    
-    <!-- 3D Login/Registration Page -->
-    <div id="login-page-container" class="page active">
-        <div class="shape shape1"></div>
-        <div class="shape shape2"></div>
-        <div class="login-box">
-            <img id="role-icon-img" src="https://i.imgur.com/M5N1s6A.png" alt="Student Icon" class="role-icon">
-            <h2 id="auth-title">Welcome to EduLink</h2>
-            <form id="auth-form">
-                <div class="input-group" id="name-group" style="display: none;">
-                    <i class="fa-solid fa-user"></i>
-                    <input type="text" id="name" name="name" placeholder="Full Name" />
-                </div>
-                <div class="input-group">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="email" name="email" placeholder="Email Address" required />
-                </div>
-                <div class="input-group">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="password" name="password" placeholder="Password" required />
-                </div>
-                <div class="input-group" id="role-group" style="display: none;">
-                    <i class="fa-solid fa-user-tag"></i>
-                    <select id="role" name="role" class="cursor-pointer">
-                        <option value="Student">I am a Student</option>
-                        <option value="Teacher">I am a Teacher</option>
-                        <option value="Parent">I am a Parent</option>
-                    </select>
-                </div>
-                <button type="submit" id="auth-submit-btn">Login</button>
-                <p id="auth-message"></p>
-                <a id="auth-toggle-link">Don't have an account? Register Now</a>
-            </form>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+
+<!-- Sticky Header -->
+<header class="sticky top-0 z-40 bg-white shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-4">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home-page')">
+          <div class="w-10 h-10 bg-edulink text-white rounded flex items-center justify-center font-bold">E</div>
+          <div class="hidden sm:block">
+            <div class="font-semibold">EduLink</div>
+            <div class="text-xs text-gray-500">Learn. Grow. Succeed.</div>
+          </div>
         </div>
+        <nav class="hidden md:flex items-center gap-4 ml-6">
+          <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('home-page')">Home</a>
+          <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('courses-page')">Courses</a>
+          <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('student-dashboard-page')">My Dashboard</a>
+        </nav>
+      </div>
+
+      <div id="header-user-area" class="flex items-center gap-3">
+        <!-- dynamic user area -->
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed right-4 bottom-6 z-50 space-y-2"></div>
+
+  <!-- Pages -->
+  <section id="home-page" class="page ">
+    <!-- Hero -->
+    <div class="bg-white rounded-lg shadow p-8 mb-8">
+      <div class="flex flex-col lg:flex-row gap-6 items-center">
+        <div class="flex-1">
+          <h1 class="text-3xl md:text-4xl font-bold mb-3">Unlock Your Potential</h1>
+          <p class="text-gray-600 mb-6">World-class courses, expert instructors, personalised learning — all in one place.</p>
+          <div class="flex gap-2">
+            <input id="home-search" class="flex-1 px-4 py-3 border rounded-md shadow-sm" placeholder="Search courses, e.g. 'JEE Physics'" />
+            <button class="px-5 py-3 rounded-md bg-edulink text-white font-medium" onclick="searchFromHero()">Search</button>
+          </div>
+        </div>
+        <div class="w-full lg:w-1/3">
+          <div class="bg-gradient-to-tr from-edulink to-indigo-500 text-white rounded-lg p-6">
+            <h3 class="font-semibold">Why EduLink?</h3>
+            <ul class="mt-3 text-sm space-y-2">
+              <li>Structured curriculum</li>
+              <li>Expert teachers</li>
+              <li>Progress tracking & parental controls</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Main Application Container -->
-    <div id="main-app-container" class="page">
-        <!-- Header -->
-        <header id="main-header" class="bg-white/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
-            <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <a href="#" class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-500" data-page="home-page">EduLink</a>
-                <div class="hidden md:flex items-center space-x-8 font-semibold text-gray-600">
-                    <a href="#" class="hover:text-blue-600 transition" data-page="home-page">Home</a>
-                    <a href="#" class="hover:text-blue-600 transition" data-page="courses-page">Courses</a>
-                    <a href="#" class="hover:text-blue-600 transition hidden" id="dashboard-nav">My Dashboard</a>
-                </div>
-                <div id="user-section" class="flex items-center space-x-4"></div>
-            </nav>
-        </header>
-
-        <!-- Dynamic Page Content -->
-        <main>
-            <div id="home-page" class="page"></div>
-            <div id="courses-page" class="page"></div>
-            <div id="course-detail-page" class="page"></div>
-            <div id="student-dashboard-page" class="page"></div>
-            <div id="teacher-dashboard-page" class="page"></div>
-            <div id="parent-dashboard-page" class="page"></div>
-        </main>
+    <!-- Categories -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Course Categories</h2>
+      <div id="categories-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
     </div>
 
-    <!-- Global Containers -->
-    <div id="modal-container"></div>
-    <div id="toast-container" class="fixed bottom-5 right-5 z-[101] w-full max-w-sm"></div>
-    <div id="loading-overlay" class="fixed inset-0 bg-white/80 z-[102] hidden items-center justify-center">
-        <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-indigo-500"></div>
+    <!-- Featured -->
+    <div>
+      <h2 class="text-xl font-semibold mb-4">Featured Courses</h2>
+      <div id="featured-courses" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </div>
+  </section>
+
+  <!-- Courses Page -->
+  <section id="courses-page" class="page">
+    <div class="flex flex-col lg:flex-row gap-6">
+      <aside class="w-full lg:w-72 bg-white p-4 rounded shadow-sm">
+        <h3 class="font-semibold mb-3">Filters</h3>
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">Subject</label>
+          <select id="filter-subject" class="w-full border rounded px-3 py-2" onchange="renderCourses()">
+            <option value="">All</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">Grade Level</label>
+          <select id="filter-grade" class="w-full border rounded px-3 py-2" onchange="renderCourses()">
+            <option value="">All</option>
+            <option>Grade 8</option>
+            <option>Grade 9</option>
+            <option>Grade 10</option>
+            <option>Grade 11</option>
+            <option>Grade 12</option>
+            <option>UG</option>
+          </select>
+        </div>
+        <div>
+          <button class="w-full py-2 rounded bg-edulink text-white" onclick="resetFilters()">Reset Filters</button>
+        </div>
+      </aside>
+
+      <div class="flex-1">
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-xl font-semibold">All Courses</h2>
+          <div class="text-sm text-gray-500">Showing <span id="courses-count">0</span> courses</div>
+        </div>
+
+        <div id="courses-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Course Detail -->
+  <section id="course-detail-page" class="page">
+    <div class="bg-white rounded p-6 shadow-sm">
+      <div id="course-detail-content"></div>
+    </div>
+  </section>
+
+  <!-- Student Dashboard -->
+  <section id="student-dashboard-page" class="page">
+    <h2 class="text-2xl font-semibold mb-4">Student Dashboard</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded p-4 shadow-sm">
+        <h3 class="font-semibold mb-3">My Courses</h3>
+        <div id="my-courses-list" class="space-y-4"></div>
+      </div>
+
+      <aside class="bg-white rounded p-4 shadow-sm">
+        <h3 class="font-semibold mb-3">Next Lesson & Upcoming</h3>
+        <div id="next-lesson-area"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Parent Dashboard -->
+  <section id="parent-dashboard-page" class="page">
+    <h2 class="text-2xl font-semibold mb-4">Parent Dashboard</h2>
+    <div class="bg-white rounded p-6 shadow-sm mb-6">
+      <div class="flex gap-4 items-center">
+        <input id="child-link-code" class="px-3 py-2 border rounded flex-1" placeholder="Enter child's link code" />
+        <button class="px-4 py-2 bg-edulink text-white rounded" onclick="linkChild()">Link Child</button>
+      </div>
     </div>
 
-    <script>
-        // --- CONFIGURATION & STATE MANAGEMENT ---
-        const API_BASE_URL = 'https://edulink-lms.onrender.com';
-        const state = {
-            currentUser: null, // { name, email, role, token }
-            courses: [],
-            currentPage: 'home-page',
-            isLoginView: true,
-        };
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded p-4 shadow-sm">
+        <h3 class="font-semibold mb-3">Linked Children</h3>
+        <div id="linked-children-area"></div>
+      </div>
 
-        // --- MOCK DATA FOR DEMO ---
-        const mockCourses = [
-            { _id: '1', title: 'CBSE Class 10 Maths Mastery', description: 'Master the complete CBSE Class 10 mathematics syllabus with interactive lessons.', instructor: 'Priya Sharma', duration: '6 Months', image: 'https://placehold.co/600x400/3b82f6/ffffff?text=Maths', category: 'Maths' },
-            { _id: '2', title: 'Python for Beginners', description: 'Build real-world applications from scratch. No prior programming experience needed.', instructor: 'Rohan Verma', duration: '3 Months', image: 'https://placehold.co/600x400/8b5cf6/ffffff?text=Python', category: 'Programming' },
-            { _id: '3', title: 'JEE Advanced Physics', description: 'Tackle complex physics problems with proven strategies for the JEE exam.', instructor: 'Dr. Alok Gupta', duration: '1 Year', image: 'https://placehold.co/600x400/ec4899/ffffff?text=Physics', category: 'JEE Prep' },
-            { _id: '4', title: 'UPSC History: Ancient to Modern', description: 'A complete guide to Indian History for the UPSC civil services examination.', instructor: 'Anjali Singh', duration: '8 Months', image: 'https://placehold.co/600x400/f97316/ffffff?text=History', category: 'UPSC' },
-            { _id: '5', title: 'Complete Guide to Web Development', description: 'Become a full-stack developer. Learn HTML, CSS, JavaScript, Node.js, and more.', instructor: 'Vikram Singh', duration: '9 Months', image: 'https://placehold.co/600x400/10b981/ffffff?text=Web+Dev', category: 'Programming' },
-            { _id: '6', title: 'NEET Biology Crash Course', description: 'Score high in NEET with this intensive biology course covering all important topics.', instructor: 'Dr. Sneha Reddy', duration: '4 Months', image: 'https://placehold.co/600x400/22c55e/ffffff?text=Biology', category: 'NEET Prep' },
-            { _id: '7', title: 'Mastering English Grammar', description: 'Improve your English fluency and accuracy with this comprehensive grammar guide.', instructor: 'Aditi Desai', duration: '2 Months', image: 'https://placehold.co/600x400/f43f5e/ffffff?text=English', category: 'Language' },
-            { _id: '8', title: 'CBSE Class 10 Chemistry', description: 'Understand chemical reactions, acids, bases, and the periodic table with ease.', instructor: 'Rajesh Kumar', duration: '5 Months', image: 'https://placehold.co/600x400/6366f1/ffffff?text=Chemistry', category: 'Science' }
-        ];
-        
-        // --- UTILITIES ---
-        const showToast = (message, isError = false) => {
-             const toastContainer = document.getElementById('toast-container');
-             const toast = document.createElement('div');
-             toast.className = `toast p-4 mb-3 rounded-xl shadow-2xl text-white font-semibold ${isError ? 'bg-red-500' : 'bg-green-500'} toast-in`;
-             toast.textContent = message;
-             toastContainer.appendChild(toast);
-             setTimeout(() => toast.remove(), 4000);
-        };
-        const showLoading = (isLoading) => {
-            document.getElementById('loading-overlay').style.display = isLoading ? 'flex' : 'none';
-        };
+      <div class="bg-white rounded p-4 shadow-sm">
+        <h3 class="font-semibold mb-3">Weekly Summary</h3>
+        <div id="parent-weekly-summary"></div>
+      </div>
+    </div>
+  </section>
 
-        // --- API CALLS ---
-        async function apiRequest(endpoint, method = 'GET', body = null, headers = {}) {
-            showLoading(true);
-            try {
-                const token = localStorage.getItem('edulink_token');
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
-                if (body) {
-                    headers['Content-Type'] = 'application/json';
-                }
-                const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
-                    method,
-                    headers,
-                    body: body ? JSON.stringify(body) : null
-                });
-                if (!response.ok) { // Check for non-JSON error responses first
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'An API error occurred.');
-                }
-                const data = await response.json();
-                if (data.message && response.status !== 200) throw new Error(data.message);
-                return data;
-            } catch (error) {
-                console.error(`API request to ${endpoint} failed:`, error);
-                showToast(error.message, true);
-                throw error;
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // --- CORE APP LOGIC & RENDERING ---
-        const navigateTo = (pageId, context = null) => {
-            document.querySelectorAll('#main-app-container .page').forEach(p => p.classList.remove('active'));
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
-                state.currentPage = pageId;
-                window.scrollTo(0, 0);
+  <!-- Auth Modal (Login/Register simulated) -->
+ <div id="auth-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+  <div class="bg-white rounded-2xl shadow-xl w-96 p-6 relative animate-fadeIn">
+    <div class="flex justify-center mb-4">
 
-                switch (pageId) {
-                    case 'home-page':
-                        renderHomePage();
-                        break;
-                    case 'courses-page':
-                        renderCoursesPage();
-                        break;
-                    case 'course-detail-page':
-                        if (context && context.courseId) {
-                            renderCourseDetailPage(context.courseId);
-                        }
-                        break;
-                    case 'student-dashboard-page':
-                        renderStudentDashboard();
-                        break;
-                    case 'teacher-dashboard-page':
-                        renderTeacherDashboard();
-                        break;
-                    case 'parent-dashboard-page':
-                        renderParentDashboard();
-                        break;
-                }
-            }
-        };
+      <button id="login-tab" class="px-4 py-2 text-blue-600 font-semibold border-b-2 border-blue-600" onclick="toggleAuthMode('login')">Login</button>
+      <button id="register-tab" class="px-4 py-2 text-gray-500" onclick="toggleAuthMode('register')">Register</button>
+    </div>
 
-        const updateHeader = () => {
-            const userSection = document.getElementById('user-section');
-            const dashboardNav = document.getElementById('dashboard-nav');
-            if (state.currentUser) {
-                userSection.innerHTML = `
-                    <span class="font-semibold text-gray-700">Welcome, ${state.currentUser.name}</span>
-                    <button id="logout-btn" class="bg-red-500 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-red-600 transition">Logout</button>
-                `;
-                dashboardNav.classList.remove('hidden');
-                // Set correct dashboard link based on role
-                if (state.currentUser.role === 'Student') dashboardNav.dataset.page = 'student-dashboard-page';
-                else if (state.currentUser.role === 'Teacher') dashboardNav.dataset.page = 'teacher-dashboard-page';
-                else if (state.currentUser.role === 'Parent') dashboardNav.dataset.page = 'parent-dashboard-page';
-            } else {
-                userSection.innerHTML = `
-                    <button id="login-signup-btn" class="btn-primary">Login / Sign Up</button>
-                `;
-                dashboardNav.classList.add('hidden');
-            }
-        };
+    <!-- Login Form -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <input type="email" id="login-email" placeholder="Email" class="w-full border p-2 mb-3 rounded-md" required>
+      <input type="password" id="login-password" placeholder="Password" class="w-full border p-2 mb-3 rounded-md" required>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Login</button>
+    </form>
 
-        const renderCourseCard = (course) => `
-            <div class="course-card bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col cursor-pointer" data-course-id="${course._id}" data-page="course-detail-page">
-                <img src="${course.image}" alt="${course.title}" class="w-full h-48 object-cover">
-                <div class="p-6 flex-grow flex flex-col">
-                    <h3 class="font-bold text-xl mb-2 text-gray-800">${course.title}</h3>
-                    <p class="text-gray-600 text-sm mb-4 flex-grow">${course.description}</p>
-                    <div class="flex justify-between items-center text-sm text-gray-500 pt-4 border-t border-gray-100">
-                        <span><i class="fa-solid fa-user-tie mr-2"></i>${course.instructor}</span>
-                        <span><i class="fa-solid fa-clock mr-2"></i>${course.duration}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // --- AUTHENTICATION LOGIC ---
-        const showApp = (shouldShow) => {
-            document.getElementById('main-app-container').style.display = shouldShow ? 'block' : 'none';
-            document.getElementById('login-page-container').style.display = shouldShow ? 'none' : 'flex';
-            if (shouldShow) {
-                document.getElementById('main-app-container').classList.add('active');
-                navigateTo('home-page');
-            }
-        };
+    <!-- Register Form -->
+    <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
+      <input type="text" id="register-name" placeholder="Full Name" class="w-full border p-2 mb-3 rounded-md" required>
+      <input type="email" id="register-email" placeholder="Email" class="w-full border p-2 mb-3 rounded-md" required>
+      <input type="password" id="register-password" placeholder="Password" class="w-full border p-2 mb-3 rounded-md" required>
+      <select id="register-role" class="w-full border p-2 mb-4 rounded-md">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="parent">Parent</option>
+      </select>
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">Register</button>
+    </form>
 
-        const toggleAuthView = () => {
-            state.isLoginView = !state.isLoginView;
-            const isLogin = state.isLoginView;
-            document.getElementById('name-group').style.display = isLogin ? 'none' : 'block';
-            document.getElementById('role-group').style.display = isLogin ? 'none' : 'block';
-            document.getElementById('auth-title').textContent = isLogin ? 'Welcome Back!' : 'Create Your Account';
-            document.getElementById('auth-submit-btn').textContent = isLogin ? 'Login' : 'Register';
-            document.getElementById('auth-toggle-link').textContent = isLogin ? "Don't have an account? Register Now" : "Already have an account? Login";
-            document.getElementById('auth-message').textContent = '';
-            document.getElementById('name').required = !isLogin;
-        };
+    <button onclick="closeAuthModal()" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+  </div>
+</div>
 
-        const handleAuthSubmit = async (e) => {
-            e.preventDefault();
-            const formData = Object.fromEntries(new FormData(e.target));
-            const endpoint = state.isLoginView ? '/auth/login' : '/auth/register';
-            try {
-                const data = await apiRequest(endpoint, 'POST', formData);
-                localStorage.setItem('edulink_token', data.token);
-                state.currentUser = { name: data.name, email: data.email, role: data.role, token: data.token };
-                showToast(`Welcome, ${data.name}!`, false);
-                updateHeader();
-                showApp(true);
-            } catch (error) {
-                document.getElementById('auth-message').textContent = error.message;
-                document.getElementById('auth-message').style.color = 'red';
-            }
-        };
 
-        // --- PAGE RENDERING (NOW FUNCTIONAL) ---
-        function renderHomePage() {
-            const page = document.getElementById('home-page');
-            const featuredCourses = state.courses.slice(0, 4);
-            page.innerHTML = `
-                <section class="bg-white">
-                    <div class="container mx-auto px-6 py-20 text-center">
-                        <h1 class="text-5xl md:text-7xl font-extrabold text-gray-800 leading-tight">Your Future Starts Here.</h1>
-                        <p class="mt-4 text-xl text-gray-600">Explore limitless learning with expert-led courses on EduLink.</p>
-                    </div>
-                </section>
-                <section class="py-16">
-                    <div class="container mx-auto px-6">
-                        <h2 class="text-4xl font-bold text-center mb-12">Featured Courses</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            ${featuredCourses.map(renderCourseCard).join('')}
-                        </div>
-                    </div>
-                </section>
-            `;
-        }
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-black/30 hidden items-center justify-center z-50">
+    <div class="bg-white p-4 rounded shadow flex items-center gap-3">
+      <svg class="animate-spin h-6 w-6 text-edulink" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+      <div>Loading...</div>
+    </div>
+  </div>
 
-        function renderCoursesPage() {
-            const page = document.getElementById('courses-page');
-            page.innerHTML = `
-                <section class="py-16">
-                    <div class="container mx-auto px-6">
-                        <h2 class="text-4xl font-bold text-center mb-12">All Courses</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            ${state.courses.map(renderCourseCard).join('')}
-                        </div>
-                    </div>
-                </section>
-            `;
-        }
+</main>
 
-        function renderCourseDetailPage(courseId) {
-            const page = document.getElementById('course-detail-page');
-            const course = state.courses.find(c => c._id === courseId);
-            if (!course) {
-                page.innerHTML = `<p class="text-center py-20">Course not found.</p>`;
-                return;
-            }
-            page.innerHTML = `
-                <section class="py-16 bg-white">
-                    <div class="container mx-auto px-6">
-                        <div class="lg:flex gap-12">
-                            <div class="lg:w-2/3">
-                                <h1 class="text-4xl font-extrabold mb-2">${course.title}</h1>
-                                <p class="text-lg text-gray-600 mb-6">By ${course.instructor}</p>
-                                <img src="${course.image}" alt="${course.title}" class="rounded-2xl shadow-xl w-full object-cover mb-8">
-                                <h2 class="text-2xl font-bold mb-4">About This Course</h2>
-                                <p class="text-gray-700 leading-relaxed">${course.description}</p>
-                            </div>
-                            <div class="lg:w-1/3 mt-8 lg:mt-0">
-                                <div class="bg-gray-50 p-6 rounded-2xl shadow-inner">
-                                    <h3 class="text-2xl font-bold mb-6">Course Features</h3>
-                                    <button class="w-full btn-primary text-lg">Enroll Now</button>
-                                    <!-- Additional details can go here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            `;
-        }
+<script>
+/* ===========================
+   Configuration & Mock Data
+   =========================== */
+const API_BASE_URL = 'https://edulink-lms.onrender.com'; // <- replace with your backend
 
-        function renderStudentDashboard() { document.getElementById('student-dashboard-page').innerHTML = `<h1 class="text-center py-20 text-3xl font-bold">Student Dashboard (Coming Soon)</h1>`; }
-        function renderTeacherDashboard() { document.getElementById('teacher-dashboard-page').innerHTML = `<h1 class="text-center py-20 text-3xl font-bold">Teacher Dashboard (Coming Soon)</h1>`; }
-        function renderParentDashboard() { document.getElementById('parent-dashboard-page').innerHTML = `<h1 class="text-center py-20 text-3xl font-bold">Parent Dashboard (Coming Soon)</h1>`; }
-        
-        // --- INITIALIZATION & EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const courseData = await apiRequest('/courses');
-                state.courses = courseData.courses || mockCourses;
-            } catch (error) {
-                console.log("Using mock data as API failed.");
-                state.courses = mockCourses;
-            }
-            const token = localStorage.getItem('edulink_token');
-            if (token) {
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    state.currentUser = { name: payload.name, email: payload.email, role: payload.role, token };
-                    showApp(true);
-                } catch {
-                     localStorage.removeItem('edulink_token');
-                     showApp(false);
-                }
-            } else {
-                showApp(false);
-            }
-            updateHeader();
-        });
+// Mock dataset used when API calls fail or for demo
+const mock = {
+  users: [
+    { id: 'u_student_1', name: 'Aman Verma', email: 'aman@student.com', role: 'student', token: 'token_student_1', linkCode: 'STU1234' },
+    { id: 'u_teacher_1', name: 'Dr. Priya Rao', email: 'priya@teacher.com', role: 'teacher', token: 'token_teacher_1' },
+    { id: 'u_parent_1', name: 'Rakesh Sharma', email: 'rakesh@parent.com', role: 'parent', token: 'token_parent_1', linkedChildren: [] }
+  ],
+  courses: [
+    { id: 'c1', title: 'Class 10 CBSE Maths', subject: 'Maths', grade: 'Grade 10', desc: 'Complete Class 10 mathematics with concept clarity and doubt solving.', instructor: 'Dr. Priya Rao', duration: '40 hrs', rating: 4.6, syllabus: ['Number Systems', 'Algebra', 'Coordinate Geometry', 'Trigonometry', 'Probability'] },
+    { id: 'c2', title: 'Introduction to Python', subject: 'Computer Science', grade: 'UG', desc: 'Beginner friendly Python programming course.', instructor: 'Saket Kumar', duration: '20 hrs', rating: 4.7, syllabus: ['Variables', 'Control Flow', 'Functions', 'Data Structures', 'OOP'] },
+    { id: 'c3', title: 'JEE Advanced Physics', subject: 'Physics', grade: 'Grade 12', desc: 'Advanced problem solving for JEE aspirants.', instructor: 'Ankit Mehra', duration: '60 hrs', rating: 4.8, syllabus: ['Mechanics', 'Electrodynamics', 'Optics', 'Modern Physics'] },
+    { id: 'c4', title: 'UPSC Modern Indian History', subject: 'History', grade: 'UG', desc: 'In-depth modern history for UPSC prelims & mains.', instructor: 'Dr. Sunita Nair', duration: '35 hrs', rating: 4.5, syllabus: ['Colonialism', 'Freedom Movement', 'Post-independence'] },
+    { id: 'c5', title: 'Class 12 CBSE Chemistry', subject: 'Chemistry', grade: 'Grade 12', desc: 'Clear concept and practice for board and competitive exams.', instructor: 'Pooja Singh', duration: '45 hrs', rating: 4.6, syllabus: ['Organic', 'Inorganic', 'Physical Chemistry'] },
+    { id: 'c6', title: 'Data Structures & Algorithms', subject: 'Computer Science', grade: 'UG', desc: 'Core DSA for interviews and competitive coding.', instructor: 'Rohan Das', duration: '50 hrs', rating: 4.8, syllabus: ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Sorting'] },
+    { id: 'c7', title: 'Spoken English: Confidence & Fluency', subject: 'English', grade: 'UG', desc: 'Boost your spoken English skills and confidence.', instructor: 'Neha Kapoor', duration: '15 hrs', rating: 4.4, syllabus: ['Pronunciation', 'Vocabulary', 'Conversations'] },
+    { id: 'c8', title: 'Foundation: Class 8 Maths', subject: 'Maths', grade: 'Grade 8', desc: 'Strong foundational course for middle schoolers.', instructor: 'Kumar Swamy', duration: '25 hrs', rating: 4.5, syllabus: ['Numbers', 'Geometry', 'Algebra basics'] },
+    { id: 'c9', title: 'Business Economics (UG)', subject: 'Economics', grade: 'UG', desc: 'Basic to intermediate micro & macro concepts.', instructor: 'Prof. Anita Bose', duration: '30 hrs', rating: 4.3, syllabus: ['Microeconomics', 'Macroeconomics'] },
+    { id: 'c10', title: 'Creative Writing Workshop', subject: 'Arts', grade: 'UG', desc: 'Develop storytelling & creative writing skills.', instructor: 'Meera Iyer', duration: '12 hrs', rating: 4.2, syllabus: ['Short stories', 'Poetry', 'Editing'] }
+  ],
+  enrollments: [
+    { userId: 'u_student_1', courseId: 'c1', progress: 0.3, completedLessons: ['Number Systems'] },
+    { userId: 'u_student_1', courseId: 'c2', progress: 0.6, completedLessons: ['Variables','Control Flow'] }
+  ],
+  activities: [
+    { userId: 'u_student_1', courseId: 'c2', text: 'Completed lesson: Control Flow', time: Date.now() - 2*3600*1000 }
+  ]
+};
 
-        document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
-        document.getElementById('auth-toggle-link').addEventListener('click', (e) => { e.preventDefault(); toggleAuthView(); });
-        document.getElementById('role').addEventListener('change', (e) => {
-            const roleIcons = {
-                Student: 'https://i.imgur.com/M5N1s6A.png', // student icon
-                Teacher: 'https://i.imgur.com/ODS6lW4.png', // teacher icon
-                Parent: 'https://i.imgur.com/sC50d2C.png'   // parent icon
-            };
-            document.getElementById('role-icon-img').src = roleIcons[e.target.value];
-        });
+/* ===========================
+   App State
+   =========================== */
+let state = {
+  currentUser: null, // { id, name, role, token }
+  courses: [],
+  users: [],
+  enrollments: [],
+  activities: [],
+  linkedChildren: {} // parentId -> [childUserId]
+};
 
-        document.body.addEventListener('click', (e) => {
-            const pageTarget = e.target.closest('[data-page]');
-            if (pageTarget) {
-                e.preventDefault();
-                navigateTo(pageTarget.dataset.page, { courseId: pageTarget.dataset.courseId });
-            }
-            if (e.target.matches('#logout-btn')) {
-                localStorage.removeItem('edulink_token');
-                state.currentUser = null;
-                updateHeader();
-                showApp(false);
-            }
-        });
-    </script>
+/* ===========================
+   Utilities: Toast, Loading
+   =========================== */
+function showToast(message, type = 'success'){
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'max-w-sm px-4 py-3 rounded shadow-sm border transform transition-all duration-300 ease-out bg-white';
+  el.innerHTML = `<div class=\"flex items-center justify-between gap-4\"><div class=\"text-sm\">${message}</div><div class=\"text-xs text-gray-400 cursor-pointer\">✕</div></div>`;
+  container.appendChild(el);
+  el.querySelector('div div:last-child').onclick = () => el.remove();
+  setTimeout(()=>{ el.remove(); }, 5000);
+}
+
+function showLoading(show = true){
+  document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
+}
+
+/* ===========================
+   Simple local API wrapper (tries backend, falls back to mock)
+   =========================== */
+async function apiFetch(path, opts = {}){
+  const url = (API_BASE_URL || '').replace(/\/$/, '') + path;
+  // attach token if present
+  const token = localStorage.getItem('edulink_token');
+  opts.headers = opts.headers || {};
+  if(token) opts.headers['Authorization'] = 'Bearer ' + token;
+
+  try {
+    // when API_BASE_URL is not configured, throw to go to mock
+    if(!API_BASE_URL || API_BASE_URL === 'YOUR_BACKEND_API_URL_HERE') throw new Error('No API configured');
+    showLoading(true);
+    const res = await fetch(url, opts);
+    showLoading(false);
+    if(!res.ok) throw new Error('Network error');
+    return await res.json();
+  } catch(err){
+    // fallback to mock behaviour for demo
+    // console.warn('API failed, using mock:', err.message);
+    return mockFallback(path, opts);
+  } finally{ showLoading(false); }
+}
+
+function mockFallback(path, opts){
+  // simulate endpoints for demo only
+  if(path.startsWith('/courses')){
+    return Promise.resolve({ success: true, data: mock.courses });
+  }
+  if(path.startsWith('/course/')){
+    const id = path.split('/').pop();
+    const course = mock.courses.find(c => c.id === id);
+    return Promise.resolve({ success: !!course, data: course });
+  }
+  if(path.startsWith('/auth/login')){
+    // simple email lookup
+    const body = opts.body ? JSON.parse(opts.body) : {};
+    const user = mock.users.find(u => u.email === body.email);
+    if(user) return { success: true, data: { token: user.token, user } };
+    return { success: false, error: 'Invalid credentials' };
+  }
+  if(path.startsWith('/auth/register')){
+    const body = opts.body ? JSON.parse(opts.body) : {};
+    const id = 'u_' + Math.random().toString(36).slice(2,9);
+    const token = 'token_' + Math.random().toString(36).slice(2,12);
+    const newUser = { id, name: body.name, email: body.email, role: body.role, token, linkCode: 'STU' + Math.floor(1000+Math.random()*9000) };
+    mock.users.push(newUser);
+    return { success:true, data: { token, user: newUser } };
+  }
+  if(path.startsWith('/enroll')){
+    const body = opts.body ? JSON.parse(opts.body) : {};
+    mock.enrollments.push({ userId: body.userId, courseId: body.courseId, progress: 0, completedLessons: [] });
+    return { success: true };
+  }
+  if(path.startsWith('/me')){
+    const token = opts.headers && opts.headers['Authorization'] ? opts.headers['Authorization'].replace('Bearer ','') : null;
+    const user = mock.users.find(u => u.token === token);
+    if(user) return { success: true, data: user };
+    return { success: false, error: 'Unauthorized' };
+  }
+  return { success: false, error: 'Unknown mock path' };
+}
+
+/* ===========================
+   Auth (login/register/logout)
+   =========================== */
+async function openAuthModal(mode = 'login'){
+  document.getElementById('auth-modal').style.display = 'flex';
+  document.getElementById('auth-modal-title').innerText = mode === 'login' ? 'Login' : 'Sign Up';
+  document.getElementById('auth-name').style.display = mode === 'login' ? 'none' : 'block';
+  document.getElementById('auth-role').style.display = mode === 'login' ? 'none' : 'block';
+  const btn = document.getElementById('auth-submit');
+  btn.onclick = async ()=>{
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value.trim();
+    const name = document.getElementById('auth-name').value.trim();
+    const role = document.getElementById('auth-role').value;
+    if(!email || !password){ showToast('Please enter email and password', 'error'); return; }
+    if(mode === 'login'){
+      const res = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      if(res.success){
+        localStorage.setItem('edulink_token', res.data.token);
+        state.currentUser = res.data.user;
+        renderHeaderUser();
+        showToast('Logged in as ' + res.data.user.name);
+        closeAuthModal();
+        navigateTo(res.data.user.role === 'parent' ? 'parent-dashboard-page' : 'student-dashboard-page');
+      } else showToast(res.error || 'Login failed', 'error');
+    } else {
+      const res = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, role }) });
+      if(res.success){
+        localStorage.setItem('edulink_token', res.data.token);
+        state.currentUser = res.data.user;
+        renderHeaderUser();
+        showToast('Registered & logged in as ' + res.data.user.name);
+        closeAuthModal();
+      } else showToast(res.error || 'Registration failed', 'error');
+    }
+  };
+}
+
+function closeAuthModal(){
+  document.getElementById('auth-modal').style.display = 'none';
+}
+
+function logout(){
+  localStorage.removeItem('edulink_token');
+  state.currentUser = null;
+  renderHeaderUser();
+  showToast('Logged out');
+  navigateTo('home-page');
+}
+
+async function tryRestoreSession(){
+  const token = localStorage.getItem('edulink_token');
+  if(!token) return;
+  const res = await apiFetch('/me', { headers: { 'Authorization': token } });
+  if(res && res.success){ state.currentUser = res.data; renderHeaderUser(); }
+  else { localStorage.removeItem('edulink_token'); }
+}
+
+/* ===========================
+   Navigation & Rendering
+   =========================== */
+function navigateTo(pageId){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  window.scrollTo(0,0);
+  // lazy render certain pages
+  if(pageId === 'home-page') renderHome();
+  if(pageId === 'courses-page') renderCourses();
+  if(pageId === 'student-dashboard-page') renderStudentDashboard();
+  if(pageId === 'parent-dashboard-page') renderParentDashboard();
+}
+
+function renderHeaderUser(){
+  const area = document.getElementById('header-user-area');
+  area.innerHTML = '';
+  if(!state.currentUser){
+    const loginBtn = document.createElement('button');
+    loginBtn.className = 'px-4 py-2 rounded border';
+    loginBtn.innerText = 'Login';
+    loginBtn.onclick = () => openAuthModal('login');
+    const signupBtn = document.createElement('button');
+    signupBtn.className = 'px-4 py-2 rounded bg-edulink text-white';
+    signupBtn.innerText = 'Sign Up';
+    signupBtn.onclick = () => openAuthModal('signup');
+    area.appendChild(loginBtn);
+    area.appendChild(signupBtn);
+  } else {
+    const name = document.createElement('div');
+    name.className = 'text-sm mr-2 hidden md:block';
+    name.innerText = state.currentUser.name + ' (' + state.currentUser.role + ')';
+    const logoutBtn = document.createElement('button');
+    logoutBtn.className = 'px-3 py-2 rounded border';
+    logoutBtn.innerText = 'Logout';
+    logoutBtn.onclick = logout;
+    area.appendChild(name);
+    area.appendChild(logoutBtn);
+  }
+}
+
+/* ===========================
+   Home Page Render
+   =========================== */
+async function renderHome(){
+  // categories
+  const categories = Array.from(new Set(mock.courses.map(c => c.subject))).slice(0,8);
+  const catEl = document.getElementById('categories-list');
+  catEl.innerHTML = '';
+  categories.forEach(sub => {
+    const d = document.createElement('div');
+    d.className = 'bg-white rounded p-4 shadow-sm flex items-center gap-3 cursor-pointer hover:shadow-md';
+    d.onclick = ()=>{ document.getElementById('filter-subject').value = sub; navigateTo('courses-page'); renderCourses(); };
+    d.innerHTML = `<div class='w-12 h-12 rounded bg-gray-100 flex items-center justify-center font-semibold text-edulink'>${sub[0]}</div><div><div class='font-semibold'>${sub}</div><div class='text-sm text-gray-500'>${mock.courses.filter(c=>c.subject===sub).length} courses</div></div>`;
+    catEl.appendChild(d);
+  });
+
+  // featured courses
+  const featured = mock.courses.slice(0,3);
+  const featEl = document.getElementById('featured-courses');
+  featEl.innerHTML = '';
+  featured.forEach(c => featEl.appendChild(createCourseCard(c)));
+}
+
+function createCourseCard(course){
+  const div = document.createElement('div');
+  div.className = 'bg-white rounded p-4 shadow-sm flex flex-col h-full';
+  div.innerHTML = `<div class=\"flex justify-between items-start mb-3\"><div><h3 class=\"font-semibold\">${course.title}</h3><div class=\"text-xs text-gray-500\">${course.instructor} • ${course.duration}</div></div><div class=\"text-sm font-bold text-edulink\">${course.rating}★</div></div><p class=\"text-sm text-gray-600 mb-4 flex-1\">${course.desc}</p><div class=\"mt-2\"><button class=\"px-3 py-2 rounded bg-edulink text-white w-full\" onclick=\"openCourseDetail('${course.id}')\">View Course</button></div>`;
+  return div;
+}
+
+/* ===========================
+   Courses Page
+   =========================== */
+async function renderCourses(){
+  const res = await apiFetch('/courses');
+  const courses = (res && res.data) ? res.data : mock.courses;
+  state.courses = courses;
+  const subjectFilter = document.getElementById('filter-subject').value;
+  const gradeFilter = document.getElementById('filter-grade').value;
+  // populate subject select
+  const subjectSelect = document.getElementById('filter-subject');
+  subjectSelect.innerHTML = '<option value="">All</option>' + Array.from(new Set(courses.map(c=>c.subject))).map(s=>`<option>${s}</option>`).join('');
+
+  let filtered = courses.filter(c => {
+    if(subjectFilter && c.subject !== subjectFilter) return false;
+    if(gradeFilter && c.grade !== gradeFilter) return false;
+    return true;
+  });
+
+  const list = document.getElementById('courses-list');
+  list.innerHTML = '';
+  document.getElementById('courses-count').innerText = filtered.length;
+  filtered.forEach(c => list.appendChild(createCourseCard(c)));
+}
+
+function resetFilters(){
+  document.getElementById('filter-subject').value = '';
+  document.getElementById('filter-grade').value = '';
+  renderCourses();
+}
+
+/* ===========================
+   Course Detail
+   =========================== */
+async function openCourseDetail(courseId){
+  navigateTo('course-detail-page');
+  const res = await apiFetch('/course/' + courseId);
+  const course = (res && res.data) ? res.data : mock.courses.find(c=>c.id===courseId);
+  renderCourseDetail(course);
+}
+
+function renderCourseDetail(course){
+  const container = document.getElementById('course-detail-content');
+  container.innerHTML = '';
+  if(!course) { container.innerHTML = '<div class="text-red-500">Course not found</div>'; return; }
+
+  const enrolled = state.currentUser && mock.enrollments.find(e => e.userId === (state.currentUser && state.currentUser.id) && e.courseId === course.id);
+
+  const el = document.createElement('div');
+  el.innerHTML = `
+    <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex-1">
+        <h1 class="text-2xl font-bold">${course.title}</h1>
+        <div class="text-sm text-gray-500 mb-3">${course.instructor} • ${course.duration} • ${course.rating}★</div>
+        <p class="text-gray-700 mb-4">${course.desc}</p>
+        <h3 class="font-semibold mb-2">Syllabus</h3>
+        <ul class="list-disc pl-5 text-sm text-gray-700 mb-4">${course.syllabus.map(s => `<li>${s}</li>`).join('')}</ul>
+        ${enrolled ? '<div class="mb-4 p-3 bg-green-50 rounded">You are enrolled in this course.</div>' : ''}
+        <div class="flex gap-2">
+          ${enrolled ? `<button class='px-4 py-2 rounded border' onclick="navigateTo('student-dashboard-page')">Go to Dashboard</button>` : `<button class='px-4 py-2 rounded bg-edulink text-white' onclick="enroll('${course.id}')">Enroll Now</button>`}
+          <button class='px-4 py-2 rounded border' onclick="navigateTo('courses-page')">Back to Courses</button>
+        </div>
+      </div>
+      <div class="w-full lg:w-96 bg-gray-50 p-4 rounded">
+        ${enrolled ? `<div class='mb-4'><div class='font-semibold mb-2'>Course Player</div><div class='w-full h-40 bg-black/75 text-white rounded flex items-center justify-center'>Video Player Placeholder</div></div><div><h4 class='font-semibold mb-2'>Lessons</h4><div id='lessons-list'>${course.syllabus.map((s,i)=>`<div class='flex items-center gap-2 mb-2'><input type='checkbox' ${enrolled.completedLessons && enrolled.completedLessons.includes(s) ? 'checked' : ''} onchange="toggleLesson('${course.id}', ${i})"/> <div class='text-sm'>${s}</div></div>`).join('')}</div></div>` : `<div class='text-sm text-gray-600'>Enroll to access lessons and the video player.</div>`}
+      </div>
+    </div>
+  `;
+  container.appendChild(el);
+}
+
+function toggleLesson(courseId, lessonIndex){
+  // for demo modify mock enrollments
+  const course = mock.courses.find(c=>c.id===courseId);
+  const lesson = course.syllabus[lessonIndex];
+  const e = mock.enrollments.find(en => en.userId === (state.currentUser && state.currentUser.id) && en.courseId === courseId);
+  if(!e) return;
+  const idx = e.completedLessons.indexOf(lesson);
+  if(idx === -1) e.completedLessons.push(lesson); else e.completedLessons.splice(idx,1);
+  e.progress = e.completedLessons.length / course.syllabus.length;
+  showToast('Lesson progress updated');
+  renderStudentDashboard();
+}
+
+/* ===========================
+   Enrollment
+   =========================== */
+async function enroll(courseId){
+  if(!state.currentUser){ showToast('Please login to enroll', 'error'); openAuthModal('login'); return; }
+  const res = await apiFetch('/enroll', { method: 'POST', body: JSON.stringify({ userId: state.currentUser.id, courseId }) });
+  if(res && res.success){
+    mock.enrollments.push({ userId: state.currentUser.id, courseId, progress: 0, completedLessons: [] });
+    showToast('Enrollment successful!');
+    renderStudentDashboard();
+  } else showToast('Enrollment failed', 'error');
+}
+
+/* ===========================
+   Student Dashboard
+   =========================== */
+function renderStudentDashboard(){
+  if(!state.currentUser || state.currentUser.role !== 'student'){ document.getElementById('student-dashboard-page').innerHTML = '<div class="text-red-500">Please login as a student to view this dashboard.</div>'; return; }
+  const myEnrolls = mock.enrollments.filter(e => e.userId === state.currentUser.id);
+  const container = document.getElementById('my-courses-list');
+  container.innerHTML = '';
+  myEnrolls.forEach(en => {
+    const course = mock.courses.find(c=>c.id===en.courseId);
+    const card = document.createElement('div');
+    card.className = 'p-3 border rounded flex items-center justify-between';
+    card.innerHTML = `<div><div class='font-semibold'>${course.title}</div><div class='text-sm text-gray-500'>${course.instructor}</div></div><div class='w-40'><div class='text-xs text-gray-500 mb-1'>Progress ${(Math.round(en.progress*100))}%</div><div class='w-full bg-gray-200 h-2 rounded'><div style='width:${en.progress*100}%' class='h-2 bg-edulink rounded'></div></div></div>`;
+    container.appendChild(card);
+  });
+
+  // next lesson / upcoming area
+  const nextArea = document.getElementById('next-lesson-area');
+  if(myEnrolls.length===0){ nextArea.innerHTML = '<div class="text-sm text-gray-500">No courses yet. Enroll to get started.</div>'; }
+  else{
+    const next = myEnrolls[0];
+    const course = mock.courses.find(c=>c.id===next.courseId);
+    nextArea.innerHTML = `<div class='font-semibold'>${course.title}</div><div class='text-sm text-gray-500'>Next lesson: ${course.syllabus[next.completedLessons.length] || 'Revision'}</div><div class='mt-2'><button class='px-3 py-2 rounded bg-edulink text-white' onclick="openCourseDetail('${course.id}')">Continue</button></div>`;
+  }
+}
+
+/* ===========================
+   Parent Dashboard
+   =========================== */
+function renderParentDashboard(){
+  if(!state.currentUser || state.currentUser.role !== 'parent'){ document.getElementById('parent-dashboard-page').innerHTML = '<div class="text-red-500">Please login as a parent to view this dashboard.</div>'; return; }
+  const parentId = state.currentUser.id;
+  const linked = state.currentUser.linkedChildren || [];
+  const area = document.getElementById('linked-children-area');
+  area.innerHTML = '';
+  if(linked.length===0) area.innerHTML = '<div class="text-sm text-gray-500">No linked children yet.</div>';
+  linked.forEach(childId => {
+    const child = mock.users.find(u=>u.id===childId);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'p-3 border rounded mb-3';
+    // child's courses & progress
+    const childEnrolls = mock.enrollments.filter(e=>e.userId===childId);
+    wrapper.innerHTML = `<div class='font-semibold mb-2'>${child.name} <span class='text-xs text-gray-500'>(${child.linkCode})</span></div><div class='text-sm text-gray-600 mb-2'>Courses: ${childEnrolls.length}</div><div>${childEnrolls.map(e=>{ const c = mock.courses.find(x=>x.id===e.courseId); return `<div class=\"text-sm\">${c.title} - ${(Math.round(e.progress*100))}%</div>` }).join('')}</div>`;
+    area.appendChild(wrapper);
+  });
+
+  // weekly summary simulated
+  const weekly = document.getElementById('parent-weekly-summary');
+  const totalStudy = linked.reduce((sum, cid)=>{
+    // simulate 2-10 hours per child
+    return sum + Math.floor(2 + Math.random()*8);
+  }, 0);
+  weekly.innerHTML = `<div class='text-sm'>Total Study Time This Week: <strong>${totalStudy} hrs</strong></div><div class='mt-3 text-sm text-gray-600'>Recent activity: ${mock.activities.filter(a=>linked.includes(a.userId)).slice(0,5).map(a=>a.text).join('; ') || 'No recent activity'}</div>`;
+}
+
+async function linkChild(){
+  if(!state.currentUser || state.currentUser.role !== 'parent'){ showToast('Please login as a parent', 'error'); return; }
+  const code = document.getElementById('child-link-code').value.trim();
+  if(!code){ showToast('Enter a child link code', 'error'); return; }
+  // find child by code
+  const child = mock.users.find(u => u.linkCode === code && u.role === 'student');
+  if(!child){ showToast('Child not found', 'error'); return; }
+  // link
+  state.currentUser.linkedChildren = state.currentUser.linkedChildren || [];
+  if(state.currentUser.linkedChildren.includes(child.id)){ showToast('Child already linked', 'error'); return; }
+  state.currentUser.linkedChildren.push(child.id);
+  showToast('Child linked: ' + child.name);
+  renderParentDashboard();
+}
+
+/* ===========================
+   Search from hero
+   =========================== */
+function searchFromHero(){
+  const q = document.getElementById('home-search').value.trim().toLowerCase();
+  if(!q) return navigateTo('courses-page');
+  // simple search: set subject filter if matches subject, otherwise show results
+  document.getElementById('filter-subject').value = '';
+  navigateTo('courses-page');
+  setTimeout(()=>{
+    const filtered = mock.courses.filter(c => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.subject.toLowerCase().includes(q));
+    const list = document.getElementById('courses-list');
+    list.innerHTML = '';
+    document.getElementById('courses-count').innerText = filtered.length;
+    filtered.forEach(c => list.appendChild(createCourseCard(c)));
+  }, 200);
+}
+
+/* ===========================
+   Init
+   =========================== */
+(async function init(){
+  // load initial mock datasets
+  state.courses = mock.courses;
+  state.users = mock.users;
+  state.enrollments = mock.enrollments;
+  state.activities = mock.activities;
+  await tryRestoreSession();
+  renderHeaderUser();
+  renderHome();
+})();
+// Default: show login modal when site loads
+window.addEventListener('DOMContentLoaded', () => {
+  openAuthModal('login'); // Open login by default
+});
+
+// Function to toggle between login and registration inside modal
+function toggleAuthMode(mode) {
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const loginTab = document.getElementById('login-tab');
+  const registerTab = document.getElementById('register-tab');
+
+  if (mode === 'login') {
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+    loginTab.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+    registerTab.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+  } else {
+    loginForm.classList.add('hidden');
+    registerForm.classList.remove('hidden');
+    registerTab.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+    loginTab.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+  }
+}
+</script>
+
+
+
 </body>
 </html>
-

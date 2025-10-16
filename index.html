@@ -747,7 +747,7 @@ function renderStudentDashboard() {
     `;
     feedbackList.appendChild(item);
   });
-
+  
   // Render Overall Progress
   const totalCourses = myEnrolls.length;
   const totalProgress = myEnrolls.reduce((sum, en) => sum + en.progress, 0);

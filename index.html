@@ -211,8 +211,23 @@
   <!-- Teacher Dashboard -->
   <section id="teacher-dashboard-page" class="page">
     <h2 class="text-2xl font-semibold mb-4">Teacher Dashboard</h2>
-    <div class="bg-white rounded p-6 shadow-sm">
-      <p>Teacher-specific content will go here.</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Summary Cards -->
+      <div class="md:col-span-1 space-y-6">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h3 class="font-semibold text-gray-600">Total Courses</h3>
+          <p id="teacher-total-courses" class="text-3xl font-bold text-edulink">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h3 class="font-semibold text-gray-600">Total Students</h3>
+          <p id="teacher-total-students" class="text-3xl font-bold text-accent">0</p>
+        </div>
+      </div>
+      <!-- My Courses List -->
+      <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
+        <h3 class="font-semibold mb-4">My Courses</h3>
+        <div id="teacher-courses-list" class="space-y-4"></div>
+      </div>
     </div>
   </section>
 
@@ -270,6 +285,9 @@ const API_BASE_URL = 'https://edulink-lms.onrender.com'; // <- replace with your
 const mock = {
   users: [
     { id: 'u_student_1', name: 'Aman Verma', email: 'aman@student.com', role: 'student', token: 'token_student_1', linkCode: 'STU1234' },
+    { id: 'u_student_2', name: 'Bhavna Singh', email: 'bhavna@student.com', role: 'student', token: 'token_student_2', linkCode: 'STU5678' },
+    { id: 'u_student_3', name: 'Chetan Kumar', email: 'chetan@student.com', role: 'student', token: 'token_student_3', linkCode: 'STU9012' },
+    { id: 'u_student_4', name: 'Divya Reddy', email: 'divya@student.com', role: 'student', token: 'token_student_4', linkCode: 'STU3456' },
     { id: 'u_teacher_1', name: 'Dr. Priya Rao', email: 'priya@teacher.com', role: 'teacher', token: 'token_teacher_1' },
     { id: 'u_parent_1', name: 'Rakesh Sharma', email: 'rakesh@parent.com', role: 'parent', token: 'token_parent_1', linkedChildren: [] }
   ],
@@ -288,7 +306,10 @@ const mock = {
   enrollments: [
     { userId: 'u_student_1', courseId: 'c1', progress: 0.75, completedLessons: ['Number Systems', 'Algebra', 'Coordinate Geometry'] },
     { userId: 'u_student_1', courseId: 'c2', progress: 0.5, completedLessons: ['Variables', 'Control Flow'] },
-    { userId: 'u_student_1', courseId: 'c3', progress: 0.25, completedLessons: ['Mechanics'] }
+    { userId: 'u_student_1', courseId: 'c3', progress: 0.25, completedLessons: ['Mechanics'] },
+    { userId: 'u_student_2', courseId: 'c1', progress: 0.5, completedLessons: ['Number Systems', 'Algebra'] },
+    { userId: 'u_student_3', courseId: 'c1', progress: 0.25, completedLessons: ['Number Systems'] },
+    { userId: 'u_student_4', courseId: 'c5', progress: 0.5, completedLessons: ['Organic', 'Inorganic'] }
   ],
   assignments: [
     { id: 'a1', courseId: 'c1', userId: 'u_student_1', title: 'Algebra Homework', dueDate: '2025-10-20', status: 'Pending' },
@@ -748,8 +769,30 @@ function renderTeacherDashboard() {
       '<div class="text-red-500">Please login as a teacher to view this dashboard.</div>';
     return;
   }
-  // Add any teacher-specific logic here in the future.
-  // For now, it just shows the placeholder content.
+
+  const teacherName = state.currentUser.name;
+  const coursesList = document.getElementById('teacher-courses-list');
+  const totalCoursesEl = document.getElementById('teacher-total-courses');
+  const totalStudentsEl = document.getElementById('teacher-total-students');
+
+  const myCourses = state.courses.filter(c => c.instructor === teacherName);
+  let totalStudents = 0;
+
+  coursesList.innerHTML = myCourses.length === 0 ? '<p class="text-gray-500">You are not teaching any courses.</p>' : '';
+  myCourses.forEach(course => {
+    const studentsInCourse = state.enrollments.filter(e => e.courseId === course.id).length;
+    totalStudents += studentsInCourse;
+    const card = document.createElement('div');
+    card.className = 'p-3 border rounded';
+    card.innerHTML = `
+      <div class="font-semibold">${course.title}</div>
+      <div class="text-sm text-gray-600">Students Enrolled: ${studentsInCourse}</div>
+    `;
+    coursesList.appendChild(card);
+  });
+
+  totalCoursesEl.textContent = myCourses.length;
+  totalStudentsEl.textContent = totalStudents;
 }
 
 /* ===========================

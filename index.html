@@ -53,7 +53,7 @@
         <nav class="hidden md:flex items-center gap-4 ml-6">
           <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('home-page')">Home</a>
           <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('courses-page')">Courses</a>
-          <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('student-dashboard-page')">My Dashboard</a>
+          <a id="my-dashboard-link" class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('student-dashboard-page')">My Dashboard</a>
         </nav>
       </div>
 
@@ -170,7 +170,7 @@
   </section>
 
   <!-- Parent Dashboard -->
-  <section id="parent-dashboard-page" class="page-active">
+  <section id="parent-dashboard-page" class="page">
     <h2 class="text-2xl font-semibold mb-4">Parent Dashboard</h2>
     <div class="bg-white rounded p-6 shadow-sm mb-6">
       <div class="flex gap-4 items-center">
@@ -189,6 +189,14 @@
         <h3 class="font-semibold mb-3">Weekly Summary</h3>
         <div id="parent-weekly-summary"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- Teacher Dashboard -->
+  <section id="teacher-dashboard-page" class="page">
+    <h2 class="text-2xl font-semibold mb-4">Teacher Dashboard</h2>
+    <div class="bg-white rounded p-6 shadow-sm">
+      <p>Teacher-specific content will go here.</p>
     </div>
   </section>
 
@@ -389,11 +397,13 @@ async function handleLogin(event) {
     renderHeaderUser();
     showToast('Logged in as ' + res.data.user.name);
     closeAuthModal();
-    navigateTo(
-      res.data.user.role === 'parent'
-        ? 'parent-dashboard-page'
-        : 'student-dashboard-page'
-    );
+    if (res.data.user.role === 'student') {
+      navigateTo('student-dashboard-page');
+    } else if (res.data.user.role === 'teacher') {
+      navigateTo('teacher-dashboard-page');
+    } else if (res.data.user.role === 'parent') {
+      navigateTo('parent-dashboard-page');
+    }
   } else {
     showToast(res.error || 'Login failed', 'error');
   }
@@ -415,6 +425,13 @@ async function handleRegister(event) {
     renderHeaderUser();
     showToast('Registered & logged in as ' + res.data.user.name);
     closeAuthModal();
+    if (res.data.user.role === 'student') {
+      navigateTo('student-dashboard-page');
+    } else if (res.data.user.role === 'teacher') {
+      navigateTo('teacher-dashboard-page');
+    } else if (res.data.user.role === 'parent') {
+      navigateTo('parent-dashboard-page');
+    }
   } else {
     showToast(res.error || 'Registration failed', 'error');
   }
@@ -451,13 +468,17 @@ function navigateTo(pageId){
   if(pageId === 'home-page') renderHome();
   if(pageId === 'courses-page') renderCourses();
   if(pageId === 'student-dashboard-page') renderStudentDashboard();
+  if(pageId === 'teacher-dashboard-page') renderTeacherDashboard();
   if(pageId === 'parent-dashboard-page') renderParentDashboard();
 }
 
-function renderHeaderUser(){
+function renderHeaderUser() {
   const area = document.getElementById('header-user-area');
+  const dashboardLink = document.getElementById('my-dashboard-link');
   area.innerHTML = '';
-  if(!state.currentUser){
+
+  if (!state.currentUser) {
+    dashboardLink.style.display = 'none';
     const loginBtn = document.createElement('button');
     loginBtn.className = 'px-4 py-2 rounded border';
     loginBtn.innerText = 'Login';
@@ -469,6 +490,15 @@ function renderHeaderUser(){
     area.appendChild(loginBtn);
     area.appendChild(signupBtn);
   } else {
+    dashboardLink.style.display = 'inline-block';
+    if (state.currentUser.role === 'student') {
+      dashboardLink.onclick = () => navigateTo('student-dashboard-page');
+    } else if (state.currentUser.role === 'teacher') {
+      dashboardLink.onclick = () => navigateTo('teacher-dashboard-page');
+    } else if (state.currentUser.role === 'parent') {
+      dashboardLink.onclick = () => navigateTo('parent-dashboard-page');
+    }
+
     const name = document.createElement('div');
     name.className = 'text-sm mr-2 hidden md:block';
     name.innerText = state.currentUser.name + ' (' + state.currentUser.role + ')';
@@ -635,6 +665,19 @@ function renderStudentDashboard(){
 }
 
 /* ===========================
+   Teacher Dashboard
+   =========================== */
+function renderTeacherDashboard() {
+  if (!state.currentUser || state.currentUser.role !== 'teacher') {
+    document.getElementById('teacher-dashboard-page').innerHTML =
+      '<div class="text-red-500">Please login as a teacher to view this dashboard.</div>';
+    return;
+  }
+  // Add any teacher-specific logic here in the future.
+  // For now, it just shows the placeholder content.
+}
+
+/* ===========================
    Parent Dashboard
    =========================== */
 function renderParentDashboard(){
@@ -737,4 +780,3 @@ function toggleAuthMode(mode) {
 </script>
 </body>
 </html>
-

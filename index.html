@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -53,7 +54,7 @@
         <nav class="hidden md:flex items-center gap-4 ml-6">
           <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('home-page')">Home</a>
           <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('courses-page')">Courses</a>
-          <a class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('student-dashboard-page')">My Dashboard</a>
+          <a id="my-dashboard-link" class="nav-link text-sm hover:text-edulink cursor-pointer" onclick="navigateTo('student-dashboard-page')">My Dashboard</a>
         </nav>
       </div>
 
@@ -157,20 +158,36 @@
   <section id="student-dashboard-page" class="page">
     <h2 class="text-2xl font-semibold mb-4">Student Dashboard</h2>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 bg-white rounded p-4 shadow-sm">
-        <h3 class="font-semibold mb-3">My Courses</h3>
-        <div id="my-courses-list" class="space-y-4"></div>
+      <div class="lg:col-span-2 space-y-6">
+        <!-- My Courses -->
+        <div class="bg-white rounded p-4 shadow-sm">
+          <h3 class="font-semibold mb-3">My Courses</h3>
+          <div id="my-courses-list" class="space-y-4"></div>
+        </div>
+        <!-- Assignments -->
+        <div class="bg-white rounded p-4 shadow-sm">
+          <h3 class="font-semibold mb-3">Upcoming Assignments</h3>
+          <div id="student-assignments-list" class="space-y-3"></div>
+        </div>
       </div>
 
-      <aside class="bg-white rounded p-4 shadow-sm">
-        <h3 class="font-semibold mb-3">Next Lesson & Upcoming</h3>
-        <div id="next-lesson-area"></div>
-      </aside>
+      <div class="space-y-6">
+        <!-- Overall Progress -->
+        <div class="bg-white rounded p-4 shadow-sm">
+          <h3 class="font-semibold mb-3">Overall Progress</h3>
+          <div id="student-overall-progress"></div>
+        </div>
+        <!-- Recent Feedback -->
+        <div class="bg-white rounded p-4 shadow-sm">
+          <h3 class="font-semibold mb-3">Recent Feedback</h3>
+          <div id="student-feedback-list" class="space-y-3"></div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- Parent Dashboard -->
-  <section id="parent-dashboard-page" class="page-active">
+  <section id="parent-dashboard-page" class="page">
     <h2 class="text-2xl font-semibold mb-4">Parent Dashboard</h2>
     <div class="bg-white rounded p-6 shadow-sm mb-6">
       <div class="flex gap-4 items-center">
@@ -188,6 +205,29 @@
       <div class="bg-white rounded p-4 shadow-sm">
         <h3 class="font-semibold mb-3">Weekly Summary</h3>
         <div id="parent-weekly-summary"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teacher Dashboard -->
+  <section id="teacher-dashboard-page" class="page">
+    <h2 class="text-2xl font-semibold mb-4">Teacher Dashboard</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Summary Cards -->
+      <div class="md:col-span-1 space-y-6">
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h3 class="font-semibold text-gray-600">Total Courses</h3>
+          <p id="teacher-total-courses" class="text-3xl font-bold text-edulink">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow">
+          <h3 class="font-semibold text-gray-600">Total Students</h3>
+          <p id="teacher-total-students" class="text-3xl font-bold text-accent">0</p>
+        </div>
+      </div>
+      <!-- My Courses List -->
+      <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
+        <h3 class="font-semibold mb-4">My Courses</h3>
+        <div id="teacher-courses-list" class="space-y-4"></div>
       </div>
     </div>
   </section>
@@ -246,6 +286,9 @@ const API_BASE_URL = 'https://edulink-lms.onrender.com'; // <- replace with your
 const mock = {
   users: [
     { id: 'u_student_1', name: 'Aman Verma', email: 'aman@student.com', role: 'student', token: 'token_student_1', linkCode: 'STU1234' },
+    { id: 'u_student_2', name: 'Bhavna Singh', email: 'bhavna@student.com', role: 'student', token: 'token_student_2', linkCode: 'STU5678' },
+    { id: 'u_student_3', name: 'Chetan Kumar', email: 'chetan@student.com', role: 'student', token: 'token_student_3', linkCode: 'STU9012' },
+    { id: 'u_student_4', name: 'Divya Reddy', email: 'divya@student.com', role: 'student', token: 'token_student_4', linkCode: 'STU3456' },
     { id: 'u_teacher_1', name: 'Dr. Priya Rao', email: 'priya@teacher.com', role: 'teacher', token: 'token_teacher_1' },
     { id: 'u_parent_1', name: 'Rakesh Sharma', email: 'rakesh@parent.com', role: 'parent', token: 'token_parent_1', linkedChildren: [] }
   ],
@@ -262,8 +305,21 @@ const mock = {
     { id: 'c10', title: 'Creative Writing Workshop', subject: 'Arts', grade: 'UG', desc: 'Develop storytelling & creative writing skills.', instructor: 'Meera Iyer', duration: '12 hrs', rating: 4.2, syllabus: ['Short stories', 'Poetry', 'Editing'] }
   ],
   enrollments: [
-    { userId: 'u_student_1', courseId: 'c1', progress: 0.3, completedLessons: ['Number Systems'] },
-    { userId: 'u_student_1', courseId: 'c2', progress: 0.6, completedLessons: ['Variables','Control Flow'] }
+    { userId: 'u_student_1', courseId: 'c1', progress: 0.75, completedLessons: ['Number Systems', 'Algebra', 'Coordinate Geometry'] },
+    { userId: 'u_student_1', courseId: 'c2', progress: 0.5, completedLessons: ['Variables', 'Control Flow'] },
+    { userId: 'u_student_1', courseId: 'c3', progress: 0.25, completedLessons: ['Mechanics'] },
+    { userId: 'u_student_2', courseId: 'c1', progress: 0.5, completedLessons: ['Number Systems', 'Algebra'] },
+    { userId: 'u_student_3', courseId: 'c1', progress: 0.25, completedLessons: ['Number Systems'] },
+    { userId: 'u_student_4', courseId: 'c5', progress: 0.5, completedLessons: ['Organic', 'Inorganic'] }
+  ],
+  assignments: [
+    { id: 'a1', courseId: 'c1', userId: 'u_student_1', title: 'Algebra Homework', dueDate: '2025-10-20', status: 'Pending' },
+    { id: 'a2', courseId: 'c2', userId: 'u_student_1', title: 'Python Functions Quiz', dueDate: '2025-10-18', status: 'Pending' },
+    { id: 'a3', courseId: 'c3', userId: 'u_student_1', title: 'Kinematics Problems', dueDate: '2025-10-22', status: 'Pending' }
+  ],
+  feedback: [
+    { id: 'f1', courseId: 'c1', userId: 'u_student_1', from: 'Dr. Priya Rao', text: 'Great work on the last test! Keep it up.', rating: 4.5 },
+    { id: 'f2', courseId: 'c2', userId: 'u_student_1', from: 'Saket Kumar', text: 'Your code is clean, but remember to add more comments.' }
   ],
   activities: [
     { userId: 'u_student_1', courseId: 'c2', text: 'Completed lesson: Control Flow', time: Date.now() - 2*3600*1000 }
@@ -278,6 +334,8 @@ let state = {
   courses: [],
   users: [],
   enrollments: [],
+  assignments: [],
+  feedback: [],
   activities: [],
   linkedChildren: {} // parentId -> [childUserId]
 };
@@ -389,11 +447,13 @@ async function handleLogin(event) {
     renderHeaderUser();
     showToast('Logged in as ' + res.data.user.name);
     closeAuthModal();
-    navigateTo(
-      res.data.user.role === 'parent'
-        ? 'parent-dashboard-page'
-        : 'student-dashboard-page'
-    );
+    if (res.data.user.role === 'student') {
+      navigateTo('student-dashboard-page');
+    } else if (res.data.user.role === 'teacher') {
+      navigateTo('teacher-dashboard-page');
+    } else if (res.data.user.role === 'parent') {
+      navigateTo('parent-dashboard-page');
+    }
   } else {
     showToast(res.error || 'Login failed', 'error');
   }
@@ -415,6 +475,13 @@ async function handleRegister(event) {
     renderHeaderUser();
     showToast('Registered & logged in as ' + res.data.user.name);
     closeAuthModal();
+    if (res.data.user.role === 'student') {
+      navigateTo('student-dashboard-page');
+    } else if (res.data.user.role === 'teacher') {
+      navigateTo('teacher-dashboard-page');
+    } else if (res.data.user.role === 'parent') {
+      navigateTo('parent-dashboard-page');
+    }
   } else {
     showToast(res.error || 'Registration failed', 'error');
   }
@@ -451,13 +518,17 @@ function navigateTo(pageId){
   if(pageId === 'home-page') renderHome();
   if(pageId === 'courses-page') renderCourses();
   if(pageId === 'student-dashboard-page') renderStudentDashboard();
+  if(pageId === 'teacher-dashboard-page') renderTeacherDashboard();
   if(pageId === 'parent-dashboard-page') renderParentDashboard();
 }
 
-function renderHeaderUser(){
+function renderHeaderUser() {
   const area = document.getElementById('header-user-area');
+  const dashboardLink = document.getElementById('my-dashboard-link');
   area.innerHTML = '';
-  if(!state.currentUser){
+
+  if (!state.currentUser) {
+    dashboardLink.style.display = 'none';
     const loginBtn = document.createElement('button');
     loginBtn.className = 'px-4 py-2 rounded border';
     loginBtn.innerText = 'Login';
@@ -469,6 +540,15 @@ function renderHeaderUser(){
     area.appendChild(loginBtn);
     area.appendChild(signupBtn);
   } else {
+    dashboardLink.style.display = 'inline-block';
+    if (state.currentUser.role === 'student') {
+      dashboardLink.onclick = () => navigateTo('student-dashboard-page');
+    } else if (state.currentUser.role === 'teacher') {
+      dashboardLink.onclick = () => navigateTo('teacher-dashboard-page');
+    } else if (state.currentUser.role === 'parent') {
+      dashboardLink.onclick = () => navigateTo('parent-dashboard-page');
+    }
+
     const name = document.createElement('div');
     name.className = 'text-sm mr-2 hidden md:block';
     name.innerText = state.currentUser.name + ' (' + state.currentUser.role + ')';
@@ -611,27 +691,109 @@ async function enroll(courseId){
 /* ===========================
    Student Dashboard
    =========================== */
-function renderStudentDashboard(){
-  if(!state.currentUser || state.currentUser.role !== 'student'){ document.getElementById('student-dashboard-page').innerHTML = '<div class="text-red-500">Please login as a student to view this dashboard.</div>'; return; }
-  const myEnrolls = mock.enrollments.filter(e => e.userId === state.currentUser.id);
-  const container = document.getElementById('my-courses-list');
-  container.innerHTML = '';
+function renderStudentDashboard() {
+  if (!state.currentUser || state.currentUser.role !== 'student') {
+    document.getElementById('student-dashboard-page').innerHTML =
+      '<div class="text-red-500">Please login as a student to view this dashboard.</div>';
+    return;
+  }
+
+  const studentId = state.currentUser.id;
+  const coursesList = document.getElementById('my-courses-list');
+  const assignmentsList = document.getElementById('student-assignments-list');
+  const feedbackList = document.getElementById('student-feedback-list');
+  const overallProgress = document.getElementById('student-overall-progress');
+
+  // Render Courses
+  const myEnrolls = state.enrollments.filter(e => e.userId === studentId);
+  coursesList.innerHTML = myEnrolls.length === 0 ? '<p class="text-gray-500">No courses enrolled yet.</p>' : '';
   myEnrolls.forEach(en => {
-    const course = mock.courses.find(c=>c.id===en.courseId);
+    const course = state.courses.find(c => c.id === en.courseId);
     const card = document.createElement('div');
-    card.className = 'p-3 border rounded flex items-center justify-between';
-    card.innerHTML = `<div><div class='font-semibold'>${course.title}</div><div class='text-sm text-gray-500'>${course.instructor}</div></div><div class='w-40'><div class='text-xs text-gray-500 mb-1'>Progress ${(Math.round(en.progress*100))}%</div><div class='w-full bg-gray-200 h-2 rounded'><div style='width:${en.progress*100}%' class='h-2 bg-edulink rounded'></div></div></div>`;
-    container.appendChild(card);
+    card.className = 'p-3 border rounded';
+    card.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <div class="font-semibold">${course.title}</div>
+        <button class="text-xs bg-edulink text-white px-2 py-1 rounded" onclick="openCourseDetail('${course.id}')">View</button>
+      </div>
+      <div class="text-xs text-gray-500 mb-1">Progress: ${Math.round(en.progress * 100)}%</div>
+      <div class="w-full bg-gray-200 h-2 rounded"><div style="width:${en.progress * 100}%" class="h-2 bg-edulink rounded"></div></div>
+    `;
+    coursesList.appendChild(card);
   });
 
-  // next lesson / upcoming area
-  const nextArea = document.getElementById('next-lesson-area');
-  if(myEnrolls.length===0){ nextArea.innerHTML = '<div class="text-sm text-gray-500">No courses yet. Enroll to get started.</div>'; }
-  else{
-    const next = myEnrolls[0];
-    const course = mock.courses.find(c=>c.id===next.courseId);
-    nextArea.innerHTML = `<div class='font-semibold'>${course.title}</div><div class='text-sm text-gray-500'>Next lesson: ${course.syllabus[next.completedLessons.length] || 'Revision'}</div><div class='mt-2'><button class='px-3 py-2 rounded bg-edulink text-white' onclick="openCourseDetail('${course.id}')">Continue</button></div>`;
+  // Render Assignments
+  const myAssignments = state.assignments.filter(a => a.userId === studentId && a.status === 'Pending');
+  assignmentsList.innerHTML = myAssignments.length === 0 ? '<p class="text-gray-500">No upcoming assignments.</p>' : '';
+  myAssignments.forEach(a => {
+    const course = state.courses.find(c => c.id === a.courseId);
+    const item = document.createElement('div');
+    item.className = 'p-2 border-l-4 border-accent rounded';
+    item.innerHTML = `
+      <div class="font-semibold text-sm">${a.title}</div>
+      <div class="text-xs text-gray-500">Due: ${a.dueDate} | ${course.title}</div>
+    `;
+    assignmentsList.appendChild(item);
+  });
+
+  // Render Feedback
+  const myFeedback = state.feedback.filter(f => f.userId === studentId);
+  feedbackList.innerHTML = myFeedback.length === 0 ? '<p class="text-gray-500">No feedback yet.</p>' : '';
+  myFeedback.forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'p-2 border-l-4 border-edulink rounded';
+    item.innerHTML = `
+      <div class="text-sm">"${f.text}"</div>
+      <div class="text-xs text-gray-500 text-right">- ${f.from}</div>
+    `;
+    feedbackList.appendChild(item);
+  });
+  
+  // Render Overall Progress
+  const totalCourses = myEnrolls.length;
+  const totalProgress = myEnrolls.reduce((sum, en) => sum + en.progress, 0);
+  const avgProgress = totalCourses > 0 ? Math.round((totalProgress / totalCourses) * 100) : 0;
+  overallProgress.innerHTML = `
+    <div class="text-center">
+      <div class="text-3xl font-bold text-edulink">${avgProgress}%</div>
+      <div class="text-sm text-gray-500">Average progress across ${totalCourses} courses.</div>
+    </div>
+  `;
+}
+
+/* ===========================
+   Teacher Dashboard
+   =========================== */
+function renderTeacherDashboard() {
+  if (!state.currentUser || state.currentUser.role !== 'teacher') {
+    document.getElementById('teacher-dashboard-page').innerHTML =
+      '<div class="text-red-500">Please login as a teacher to view this dashboard.</div>';
+    return;
   }
+
+  const teacherName = state.currentUser.name;
+  const coursesList = document.getElementById('teacher-courses-list');
+  const totalCoursesEl = document.getElementById('teacher-total-courses');
+  const totalStudentsEl = document.getElementById('teacher-total-students');
+
+  const myCourses = state.courses.filter(c => c.instructor === teacherName);
+  let totalStudents = 0;
+
+  coursesList.innerHTML = myCourses.length === 0 ? '<p class="text-gray-500">You are not teaching any courses.</p>' : '';
+  myCourses.forEach(course => {
+    const studentsInCourse = state.enrollments.filter(e => e.courseId === course.id).length;
+    totalStudents += studentsInCourse;
+    const card = document.createElement('div');
+    card.className = 'p-3 border rounded';
+    card.innerHTML = `
+      <div class="font-semibold">${course.title}</div>
+      <div class="text-sm text-gray-600">Students Enrolled: ${studentsInCourse}</div>
+    `;
+    coursesList.appendChild(card);
+  });
+
+  totalCoursesEl.textContent = myCourses.length;
+  totalStudentsEl.textContent = totalStudents;
 }
 
 /* ===========================
@@ -704,6 +866,8 @@ function searchFromHero(){
   state.courses = mock.courses;
   state.users = mock.users;
   state.enrollments = mock.enrollments;
+  state.assignments = mock.assignments;
+  state.feedback = mock.feedback;
   state.activities = mock.activities;
   await tryRestoreSession();
   renderHeaderUser();
@@ -737,4 +901,4 @@ function toggleAuthMode(mode) {
 </script>
 </body>
 </html>
-
+<script async data-explicit-opt-in="true" data-deployment-id="dpl_2HiNhMczy3PrVcZkUp8rab6uNgWX" src="https://vercel.live/_next-live/feedback/feedback.js"></script>

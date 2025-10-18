@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -62,6 +63,21 @@
 
       <div id="header-user-area" class="flex items-center gap-3">
         <!-- dynamic user area -->
+      </div>
+      <div id="notifications-area" class="relative">
+        <button onclick="toggleNotifications()" class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span id="notification-dot" class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 hidden"></span>
+        </button>
+        <div id="notifications-dropdown" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-20 hidden">
+          <div class="py-2">
+            <div id="notifications-list" class="px-4 py-2 text-sm text-gray-700">
+              <!-- Notifications will be dynamically inserted here -->
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -276,16 +292,19 @@
       <div class="md:col-span-1 space-y-6">
         <div class="bg-white p-4 rounded-lg shadow">
           <h3 class="font-semibold text-gray-600">Total Courses</h3>
-          <p id="teacher-total-courses" class="text-3xl font-bold text-edulink">10</p>
+          <p id="teacher-total-courses" class="text-3xl font-bold text-edulink">0</p>
         </div>
         <div class="bg-white p-4 rounded-lg shadow">
           <h3 class="font-semibold text-gray-600">Total Students</h3>
-          <p id="teacher-total-students" class="text-3xl font-bold text-accent">140</p>
+          <p id="teacher-total-students" class="text-3xl font-bold text-accent">0</p>
         </div>
       </div>
       <!-- My Courses List -->
       <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
-        <h3 class="font-semibold mb-4">My Courses</h3>
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold">My Courses</h3>
+          <button class="px-4 py-2 rounded bg-edulink text-white" onclick="openCreateCourseModal()">Create Course</button>
+        </div>
         <div id="teacher-courses-list" class="space-y-4"></div>
       </div>
     </div>
@@ -342,6 +361,34 @@
   </div>
 </div>
 
+
+  <!-- Create Course Modal -->
+  <div id="create-course-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-96 p-6 relative animate-fadeIn">
+      <h2 class="text-xl font-semibold mb-4">Create New Course</h2>
+      <form id="create-course-form" onsubmit="handleCreateCourse(event)">
+        <input type="text" id="course-title" placeholder="Course Title" class="w-full border p-2 mb-3 rounded-md" required>
+        <textarea id="course-description" placeholder="Course Description" class="w-full border p-2 mb-3 rounded-md" required></textarea>
+        <input type="text" id="course-duration" placeholder="Course Duration (e.g., 40 hrs)" class="w-full border p-2 mb-3 rounded-md" required>
+        <button type="submit" class="w-full bg-edulink text-white py-2 rounded-lg hover:bg-green-700">Create Course</button>
+      </form>
+      <button onclick="closeCreateCourseModal()" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+    </div>
+  </div>
+
+  <!-- Create Assignment Modal -->
+  <div id="create-assignment-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 hidden z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-96 p-6 relative animate-fadeIn">
+      <h2 class="text-xl font-semibold mb-4">Create New Assignment</h2>
+      <form id="create-assignment-form" onsubmit="handleCreateAssignment(event)">
+        <input type="hidden" id="assignment-course-id">
+        <input type="text" id="assignment-title" placeholder="Assignment Title" class="w-full border p-2 mb-3 rounded-md" required>
+        <input type="date" id="assignment-due-date" class="w-full border p-2 mb-3 rounded-md" required>
+        <button type="submit" class="w-full bg-edulink text-white py-2 rounded-lg hover:bg-green-700">Create Assignment</button>
+      </form>
+      <button onclick="closeCreateAssignmentModal()" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-lg">&times;</button>
+    </div>
+  </div>
 
   <!-- Loading overlay -->
   <div id="loading-overlay" class="fixed inset-0 bg-black/30 hidden items-center justify-center z-50">
@@ -452,6 +499,9 @@ const mock = {
   activities: [
     { userId: 'u_student_1', courseId: 'c2', text: 'Completed lesson: Control Flow', time: Date.now() - 2*3600*1000 }
   ],
+  materials: [],
+  discussions: [],
+  notifications: [],
   quizzes: [
     { id: 'q1', courseId: 'c1', title: 'Algebra Basics Quiz', questions: [
       { q: 'What is 2 + 2?', options: ['3', '4', '5'], answer: '4' },
@@ -475,6 +525,9 @@ let state = {
   assignments: [],
   feedback: [],
   activities: [],
+  materials: [],
+  discussions: [],
+  notifications: [],
   quizzes: [],
   linkedChildren: {} // parentId -> [childUserId]
 };
@@ -833,10 +886,34 @@ function renderCourseDetail(course){
       <div class="w-full lg:w-96 bg-gray-50 p-4 rounded">
         ${enrolled ? `<div class='mb-4'><div class='font-semibold mb-2'>Course Player</div><div class='aspect-w-16 aspect-h-9'><iframe src="${course.youtube_link}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div><div><h4 class='font-semibold mb-2'>Lessons</h4><div id='lessons-list'>${course.syllabus.map((s,i)=>`<div class='flex items-center gap-2 mb-2'><input type='checkbox' ${enrolled.completedLessons && enrolled.completedLessons.includes(s) ? 'checked' : ''} onchange="toggleLesson('${course.id}', ${i})"/> <div class='text-sm'>${s}</div></div>`).join('')}</div></div>` : `<div class='text-sm text-gray-600'>Enroll to access lessons and the video player.</div>`}
         <div class='mt-4'><h4 class='font-semibold mb-2'>3D Model</h4><model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" alt="A 3D model of an astronaut" auto-rotate camera-controls></model-viewer></div>
+        <div class="mt-4">
+          <h4 class="font-semibold mb-2">Course Materials</h4>
+          <div id="course-materials-list" class="space-y-2">
+            <!-- Uploaded materials will be listed here -->
+          </div>
+          <div class="mt-2">
+            <input type="file" id="material-upload" class="text-sm">
+            <button class="text-xs bg-gray-600 text-white px-2 py-1 rounded" onclick="handleMaterialUpload('${course.id}')">Upload</button>
+          </div>
+        </div>
       </div>
     </div>
   `;
   container.appendChild(el);
+  renderCourseMaterials(course.id);
+  
+  const discussionTab = `
+    <div class="mt-6">
+      <h3 class="text-xl font-semibold mb-4">Discussion Forum</h3>
+      <div id="discussion-forum" class="space-y-4"></div>
+      <div class="mt-4">
+        <textarea id="discussion-post" placeholder="Ask a question or share your thoughts..." class="w-full border p-2 rounded-md"></textarea>
+        <button class="mt-2 px-4 py-2 rounded bg-edulink text-white" onclick="handleDiscussionPost('${course.id}')">Post</button>
+      </div>
+    </div>
+  `;
+  container.innerHTML += discussionTab;
+  renderDiscussionForum(course.id);
 }
 
 function toggleLesson(courseId, lessonIndex){
@@ -851,6 +928,123 @@ function toggleLesson(courseId, lessonIndex){
   showToast('Lesson progress updated');
   renderStudentDashboard();
 }
+
+function renderCourseMaterials(courseId) {
+  const listEl = document.getElementById('course-materials-list');
+  const materials = mock.materials.filter(m => m.courseId === courseId);
+  listEl.innerHTML = materials.length === 0 ? '<p class="text-xs text-gray-500">No materials uploaded yet.</p>' : '';
+  materials.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'text-sm p-2 bg-gray-100 rounded flex justify-between items-center';
+    item.innerHTML = `
+      <span>${m.fileName}</span>
+      <a href="#" class="text-xs text-blue-500" onclick="alert('Downloading ${m.fileName}')">Download</a>
+    `;
+    listEl.appendChild(item);
+  });
+}
+
+function handleMaterialUpload(courseId) {
+  const fileInput = document.getElementById('material-upload');
+  if (fileInput.files.length === 0) {
+    showToast('Please select a file to upload', 'error');
+    return;
+  }
+  const file = fileInput.files[0];
+  const newMaterial = {
+    id: 'm' + (mock.materials.length + 1),
+    courseId,
+    fileName: file.name
+  };
+  mock.materials.push(newMaterial);
+  showToast('Material uploaded successfully!');
+  renderCourseMaterials(courseId);
+  fileInput.value = ''; // Reset file input
+}
+
+function renderDiscussionForum(courseId) {
+  const forumEl = document.getElementById('discussion-forum');
+  const posts = mock.discussions.filter(d => d.courseId === courseId);
+  forumEl.innerHTML = posts.length === 0 ? '<p class="text-sm text-gray-500">No discussions yet. Start one!</p>' : '';
+  posts.forEach(post => {
+    const postEl = document.createElement('div');
+    postEl.className = 'p-3 bg-gray-50 rounded';
+    postEl.innerHTML = `
+      <p class="text-sm">${post.text}</p>
+      <div class="text-xs text-gray-500 mt-2">- ${post.author}</div>
+    `;
+    forumEl.appendChild(postEl);
+  });
+}
+
+function handleDiscussionPost(courseId) {
+  const textarea = document.getElementById('discussion-post');
+  const text = textarea.value.trim();
+  if (!text) {
+    showToast('Please enter something to post', 'error');
+    return;
+  }
+  const newPost = {
+    id: 'd' + (mock.discussions.length + 1),
+    courseId,
+    text,
+    author: state.currentUser.name
+  };
+  mock.discussions.push(newPost);
+  showToast('Posted to discussion forum!');
+  textarea.value = '';
+  renderDiscussionForum(courseId);
+}
+
+/* ===========================
+   Notifications
+   =========================== */
+function addNotification(userId, message) {
+  const newNotification = {
+    id: 'n' + (mock.notifications.length + 1),
+    userId,
+    message,
+    read: false
+  };
+  mock.notifications.push(newNotification);
+  renderNotifications();
+}
+
+function renderNotifications() {
+  if (!state.currentUser) return;
+  const notificationsList = document.getElementById('notifications-list');
+  const notificationDot = document.getElementById('notification-dot');
+  const userNotifications = mock.notifications.filter(n => n.userId === state.currentUser.id && !n.read);
+
+  notificationsList.innerHTML = userNotifications.length === 0 ? '<p class="text-sm text-gray-500">No new notifications.</p>' : '';
+  userNotifications.forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'p-2 border-b';
+    item.innerHTML = `<p>${n.message}</p>`;
+    notificationsList.appendChild(item);
+  });
+
+  if (userNotifications.length > 0) {
+    notificationDot.classList.remove('hidden');
+  } else {
+    notificationDot.classList.add('hidden');
+  }
+}
+
+function toggleNotifications() {
+  const dropdown = document.getElementById('notifications-dropdown');
+  dropdown.classList.toggle('hidden');
+  if (!dropdown.classList.contains('hidden')) {
+    // Mark notifications as read when dropdown is opened
+    mock.notifications.forEach(n => {
+      if (n.userId === state.currentUser.id) {
+        n.read = true;
+      }
+    });
+    renderNotifications();
+  }
+}
+
 
 /* ===========================
    Enrollment
@@ -949,6 +1143,7 @@ function renderStudentDashboard() {
         <div class="font-semibold text-sm">${a.title}</div>
         <div class="text-xs text-gray-500 mb-2">${course.title}</div>
         <div class="text-sm p-2 rounded bg-gray-100">Status: <strong>${a.status}</strong></div>
+        ${a.grade ? `<div class="mt-2 text-sm p-2 rounded bg-blue-50 border border-blue-200"><strong>Grade:</strong> ${a.grade}/100</div>` : ''}
         ${a.feedback ? `<div class="mt-2 text-sm p-2 rounded bg-green-50 border border-green-200"><strong>Feedback:</strong> ${a.feedback}</div>` : ''}
       `;
       submittedAssignmentsList.appendChild(item);
@@ -998,10 +1193,20 @@ function renderStudentDashboard() {
   const totalCourses = myEnrolls.length;
   const totalProgress = myEnrolls.reduce((sum, en) => sum + en.progress, 0);
   const avgProgress = totalCourses > 0 ? Math.round((totalProgress / totalCourses) * 100) : 0;
+  
+  // Calculate Overall Grade
+  const gradedAssignments = mySubmittedAssignments.filter(a => a.grade);
+  const totalGrade = gradedAssignments.reduce((sum, a) => sum + parseInt(a.grade), 0);
+  const overallGrade = gradedAssignments.length > 0 ? Math.round(totalGrade / gradedAssignments.length) : 'N/A';
+
   overallProgress.innerHTML = `
-    <div class="text-center">
+    <div class="text-center mb-4">
       <div class="text-3xl font-bold text-edulink">${avgProgress}%</div>
       <div class="text-sm text-gray-500">Average progress across ${totalCourses} courses.</div>
+    </div>
+    <div class="text-center">
+      <div class="text-3xl font-bold text-blue-600">${overallGrade}</div>
+      <div class="text-sm text-gray-500">Overall Grade</div>
     </div>
   `;
 }
@@ -1009,15 +1214,100 @@ function renderStudentDashboard() {
 /* ===========================
    Teacher Dashboard
    =========================== */
+function openCreateCourseModal() {
+  document.getElementById('create-course-modal').style.display = 'flex';
+}
+
+function closeCreateCourseModal() {
+  document.getElementById('create-course-modal').style.display = 'none';
+}
+
+async function handleCreateCourse(event) {
+  event.preventDefault();
+  const title = document.getElementById('course-title').value.trim();
+  const description = document.getElementById('course-description').value.trim();
+  const duration = document.getElementById('course-duration').value.trim();
+
+  if (!title || !description || !duration) {
+    showToast('Please fill in all fields', 'error');
+    return;
+  }
+
+  const newCourse = {
+    id: 'c' + (mock.courses.length + 1),
+    title,
+    desc: description,
+    duration,
+    instructor: state.currentUser.name,
+    subject: 'New Subject', // Or get from form
+    grade: 'UG', // Or get from form
+    rating: 0,
+    syllabus: [],
+    image_url: 'https://via.placeholder.com/400x200',
+    youtube_link: ''
+  };
+
+  mock.courses.push(newCourse);
+  showToast('Course created successfully!');
+  closeCreateCourseModal();
+  renderTeacherDashboard();
+  renderCourses(); // To update the main courses list
+}
+
+function openCreateAssignmentModal(courseId) {
+  document.getElementById('assignment-course-id').value = courseId;
+  document.getElementById('create-assignment-modal').style.display = 'flex';
+}
+
+function closeCreateAssignmentModal() {
+  document.getElementById('create-assignment-modal').style.display = 'none';
+}
+
+function handleCreateAssignment(event) {
+  event.preventDefault();
+  const courseId = document.getElementById('assignment-course-id').value;
+  const title = document.getElementById('assignment-title').value.trim();
+  const dueDate = document.getElementById('assignment-due-date').value;
+
+  if (!courseId || !title || !dueDate) {
+    showToast('Please fill in all fields', 'error');
+    return;
+  }
+
+  // Create assignments for all students enrolled in the course
+  const enrolledStudents = state.enrollments.filter(e => e.courseId === courseId).map(e => e.userId);
+  enrolledStudents.forEach(studentId => {
+    addNotification(studentId, `New assignment posted for ${title}`);
+    const newAssignment = {
+      id: 'a' + (mock.assignments.length + 1),
+      courseId,
+      userId: studentId,
+      title,
+      dueDate,
+      status: 'Pending'
+    };
+    mock.assignments.push(newAssignment);
+  });
+
+  showToast('Assignment created for all enrolled students!');
+  closeCreateAssignmentModal();
+  renderStudentDashboard(); // To update student views
+}
+
+
 function handleGradeSubmit(event, assignmentId) {
   event.preventDefault();
   const assignment = state.assignments.find(a => a.id === assignmentId);
   const feedbackText = event.target.querySelector('textarea').value;
+  const grade = event.target.querySelector('input[type="number"]').value;
   if (assignment) {
     assignment.status = 'Graded';
     assignment.feedback = feedbackText;
+    assignment.grade = grade;
+    addNotification(assignment.userId, `Your assignment "${assignment.title}" has been graded.`);
     showToast('Feedback submitted successfully!');
     renderTeacherDashboard();
+    renderStudentDashboard(); // To update student grades
   } else {
     showToast('Error submitting feedback', 'error');
   }
@@ -1047,6 +1337,9 @@ function renderTeacherDashboard() {
     card.innerHTML = `
       <div class="font-semibold">${course.title}</div>
       <div class="text-sm text-gray-600">Students Enrolled: ${studentsInCourse}</div>
+      <div class="mt-2">
+        <button class="text-xs bg-blue-500 text-white px-2 py-1 rounded" onclick="openCreateAssignmentModal('${course.id}')">Create Assignment</button>
+      </div>
     `;
     coursesList.appendChild(card);
   });
@@ -1091,6 +1384,7 @@ function renderTeacherDashboard() {
       </div>
       <div class="hidden mt-3 pt-3 border-t">
         <form onsubmit="handleGradeSubmit(event, '${a.id}')">
+          <input type="number" placeholder="Grade (0-100)" class="w-full border p-2 mb-2 rounded-md text-sm" required min="0" max="100">
           <textarea placeholder="Leave feedback..." class="w-full border p-2 mb-2 rounded-md text-sm" required></textarea>
           <button type="submit" class="w-full text-sm bg-edulink text-white px-3 py-2 rounded">Submit Feedback</button>
         </form>
@@ -1231,6 +1525,8 @@ function openQuiz(quizId) {
   // Open login modal if not logged in
   if (!state.currentUser) {
     openAuthModal('login');
+  } else {
+    renderNotifications();
   }
 })();
 
@@ -1256,4 +1552,3 @@ function toggleAuthMode(mode) {
 </script>
 </body>
 </html>
-
